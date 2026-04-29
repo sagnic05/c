@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel Panic: C-RPG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --bg: #0d0d1a;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-red: #ff3333;
+            --neon-orange: #ff9900;
+            --panel-bg: rgba(20, 20, 35, 0.9);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: white;
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-console {
+            width: 850px;
+            height: 650px;
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-blue);
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- HUD --- */
+        .top-hud {
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            padding: 10px;
+            color: var(--neon-pink);
+            border-bottom: 2px solid #333;
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        /* --- BATTLE ARENA --- */
+        .arena {
+            flex: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 60px;
+            position: relative;
+            border-bottom: 2px solid #333;
+            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .entity {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 220px;
+            position: relative; /* BUG FIX: Anchors the absolute text to this specific column */
+            margin-top: 15px; /* Gives room for the top text */
+        }
+
+        /* Health Bars */
+        .hp-box {
+            width: 100%;
+            background: #222;
+            border: 2px solid #fff;
+            height: 20px;
+            margin-bottom: 35px; /* BUG FIX: Increased to make room for the numbers below */
+            position: relative;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .hp-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--neon-green);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* UI TEXT */
+        .hp-text {
+            position: absolute;
+            top: -28px;
+            left: 0;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.55em;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.85); 
+            padding: 5px 8px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            white-space: nowrap;
+        }
+
+        .hp-numbers {
+            position: absolute;
+            top: 25px;
+            right: 0;
+            font-size: 0.8em;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.85); 
+            padding: 3px 6px;
+            border-radius: 4px;
+            border: 1px solid #555;
+            font-weight: bold;
+        }
+
+        /* Character Avatars */
+        .avatar {
+            font-size: 80px;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .player-avatar {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+            animation: float 2.5s infinite ease-in-out;
+        }
+
+        .enemy-avatar {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 20px var(--neon-red), inset 0 0 20px var(--neon-red);
+            animation: float 2s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Combat Animations */
+        @keyframes playerAttack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(200px) scale(1.2); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes enemyAttack {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-200px) scale(1.2); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes takeDamage {
+            0%, 100% { filter: brightness(1); transform: translateX(0); }
+            25% { filter: brightness(3) drop-shadow(0 0 20px red); transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+
+        /* --- UI PANEL --- */
+        .ui-panel {
+            flex: 1.2;
+            display: flex;
+            background: #000;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .menu {
+            flex: 1;
+            padding: 20px;
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .menu button {
+            background: transparent;
+            border: 1px solid;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.55em;
+            padding: 15px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+
+        .btn-easy { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-easy:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+
+        .btn-med { border-color: var(--neon-orange); color: var(--neon-orange); }
+        .btn-med:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 10px var(--neon-orange); }
+
+        .btn-hard { border-color: var(--neon-red); color: var(--neon-red); }
+        .btn-hard:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
+
+        .action-screen {
+            flex: 2;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dialogue {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7em;
+            line-height: 1.6;
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+        }
+
+        /* Coding Input */
+        .code-box {
+            display: none;
+            background: #111;
+            padding: 20px;
+            border-left: 4px solid var(--neon-blue);
+            font-size: 1.2em;
+        }
+
+        .code-box input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--neon-pink);
+            color: #fff;
+            font-family: 'Fira Code', monospace;
+            font-size: 1em;
+            width: 120px;
+            outline: none;
+            text-align: center;
+        }
+
+        .code-box input:focus {
+            border-bottom-color: var(--neon-blue);
+        }
+
+        .floating-damage {
+            position: absolute;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2em;
+            font-weight: bold;
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-console">
+        <div class="top-hud" id="level-display">LEVEL: 1/3 - INITIALIZING...</div>
+        
+        <div class="arena">
+            <div class="entity">
+                <div class="hp-text">HACKER (YOU)</div>
+                <div class="hp-box">
+                    <div class="hp-bar" id="player-hp-bar"></div>
+                </div>
+                <div class="hp-numbers" id="player-hp-num">100/100</div>
+                <div class="avatar player-avatar" id="player">🧑‍💻</div>
+            </div>
+
+            <div class="entity">
+                <div class="hp-text" id="enemy-name">???</div>
+                <div class="hp-box">
+                    <div class="hp-bar" id="enemy-hp-bar" style="background: var(--neon-red);"></div>
+                </div>
+                <div class="hp-numbers" id="enemy-hp-num">???/???</div>
+                <div class="avatar enemy-avatar" id="enemy">❓</div>
+            </div>
+        </div>
+
+        <div class="ui-panel">
+            <div class="menu" id="menu-box">
+                <button class="btn-easy" onclick="startAttack('easy')">> BASIC ATTACK<br>[EASY: 20 DMG]</button>
+                <button class="btn-med" onclick="startAttack('medium')">> LOGIC STRIKE<br>[MEDIUM: 30 DMG]</button>
+                <button class="btn-hard" onclick="startAttack('hard')">> KERNEL SMASH<br>[HARD: 40 DMG]</button>
+            </div>
+
+            <div class="action-screen">
+                <div class="dialogue" id="dialogue">System ready. Awaiting command...</div>
+                
+                <div class="code-box" id="code-box">
+                    <span style="color: #888; font-size: 0.8em;">Complete the syntax to cast:</span><br><br>
+                    <span id="code-prefix"></span>
+                    <input type="text" id="spell-input" autocomplete="off">
+                    <span id="code-suffix"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        let currentLevel = 0;
+        let player = { hp: 100, maxHp: 100 };
+        let currentSpell = null;
+        
+        // Enemy Progression
+        const levels = [
+            { name: "SYNTAX BUG", maxHp: 80, avatar: "👾", color: "var(--neon-green)" },
+            { name: "LOGIC WORM", maxHp: 150, avatar: "🐛", color: "var(--neon-orange)" },
+            { name: "DATA TITAN", maxHp: 240, avatar: "🤖", color: "var(--neon-red)" }
+        ];
+
+        let enemy = { hp: 0, maxHp: 0, name: "", avatar: "" };
+
+        // Expanded Question Bank
+        const questionBank = {
+            easy: [
+                { prefix: 'printf("Hello', suffix: ');', answer: '"' },
+                { prefix: 'int health ', suffix: ' 100;', answer: '=' },
+                { prefix: 'char grade = ', suffix: 'A\';', answer: '\'' },
+                { prefix: 'return ', suffix: ';', answer: '0' },
+                { prefix: '#include <stdio.', suffix: '>', answer: 'h' },
+                { prefix: 'int score = 50', suffix: '', answer: ';' },
+                { prefix: 'scanf("%d"', suffix: ' &health);', answer: ',' },
+                { prefix: 'void main(', suffix: ' {', answer: ')' },
+                { prefix: 'float pi = 3.', suffix: '4;', answer: '1' },
+                { prefix: 'printf("\\', suffix: '"); // newline', answer: 'n' }
+            ],
+            medium: [
+                { prefix: 'if(hp ', suffix: ' 0) { die(); }', answer: '<=' },
+                { prefix: 'for(int i=0; i<10; i', suffix: ')', answer: '++' },
+                { prefix: 'while(alive ', suffix: ' true)', answer: '==' },
+                { prefix: 'int arr[', suffix: '] = {1, 2, 3};', answer: '3' },
+                { prefix: 'if(x != ', suffix: ') { // if not zero', answer: '0' },
+                { prefix: 'do { x++; } ', suffix: '(x < 5);', answer: 'while' },
+                { prefix: 'switch(choice', suffix: ' {', answer: ')' },
+                { prefix: 'else ', suffix: ' (x == 1)', answer: 'if' },
+                { prefix: 'int sum(int a, int ', suffix: ')', answer: 'b' },
+                { prefix: 'printf("%', suffix: '", integer_var);', answer: 'd' }
+            ],
+            hard: [
+                { prefix: 'int ', suffix: 'ptr = &enemy;', answer: '*' },
+                { prefix: 'scanf("%d", ', suffix: 'damage);', answer: '&' },
+                { prefix: 'ptr = (int*)', suffix: '(sizeof(int));', answer: 'malloc' },
+                { prefix: 'enemy', suffix: 'hp -= 40;', answer: '->', altAnswer: '.' },
+                { prefix: 'free(', suffix: ');', answer: 'ptr' },
+                { prefix: 'FILE *fp = ', suffix: '("data.txt", "r");', answer: 'fopen' },
+                { prefix: 'struct Player ', suffix: ' int hp; };', answer: '{' },
+                { prefix: 'printf("%', suffix: '", string_ptr);', answer: 's' },
+                { prefix: '*(ptr + 1) ', suffix: ' 5;', answer: '=' },
+                { prefix: 'typedef struct ', suffix: ' Node;', answer: '{' }
+            ]
+        };
+
+        // UI Elements
+        const elDialogue = document.getElementById('dialogue');
+        const elCodeBox = document.getElementById('code-box');
+        const elInput = document.getElementById('spell-input');
+        const menuBox = document.getElementById('menu-box');
+        const elEnemyAvatar = document.getElementById('enemy');
+        const elPlayerAvatar = document.getElementById('player');
+
+        // --- CORE FUNCTIONS ---
+
+        function initLevel() {
+            if (currentLevel >= levels.length) {
+                elDialogue.style.color = "var(--neon-green)";
+                elDialogue.innerText = "ALL THREATS ELIMINATED.\nYOU ARE A C-PROGRAMMING MASTER.\n\nSYSTEM SECURE.";
+                menuBox.style.display = 'none';
+                elEnemyAvatar.style.opacity = '0';
+                return;
+            }
+
+            const levelData = levels[currentLevel];
+            enemy.name = levelData.name;
+            enemy.maxHp = levelData.maxHp;
+            enemy.hp = levelData.maxHp;
+            
+            document.getElementById('level-display').innerText = `LEVEL: ${currentLevel + 1}/3 - TARGET ACQUIRED`;
+            document.getElementById('enemy-name').innerText = enemy.name;
+            elEnemyAvatar.innerText = levelData.avatar;
+            elEnemyAvatar.style.borderColor = levelData.color;
+            elEnemyAvatar.style.boxShadow = `0 0 20px ${levelData.color}, inset 0 0 20px ${levelData.color}`;
+            
+            // Heal player slightly between rounds
+            if(currentLevel > 0) {
+                player.hp = Math.min(player.maxHp, player.hp + 40);
+            }
+
+            updateHUD();
+            elDialogue.style.color = "var(--neon-blue)";
+            elDialogue.innerText = `A wild ${enemy.name} appeared! Select your attack.`;
+            
+            menuBox.style.opacity = '1';
+            menuBox.style.pointerEvents = 'auto';
+        }
+
+        function updateHUD() {
+            document.getElementById('player-hp-bar').style.width = Math.max(0, (player.hp / player.maxHp) * 100) + "%";
+            document.getElementById('player-hp-num').innerText = `${Math.max(0, player.hp)}/${player.maxHp}`;
+            
+            document.getElementById('enemy-hp-bar').style.width = Math.max(0, (enemy.hp / enemy.maxHp) * 100) + "%";
+            document.getElementById('enemy-hp-num').innerText = `${Math.max(0, enemy.hp)}/${enemy.maxHp}`;
+
+            document.getElementById('player-hp-bar').style.background = player.hp < 30 ? "red" : "var(--neon-green)";
+        }
+
+        function startAttack(difficulty) {
+            menuBox.style.opacity = '0.3';
+            menuBox.style.pointerEvents = 'none';
+
+            // Non-repeating question logic
+            let availableSpells = questionBank[difficulty].filter(spell => !spell.used);
+            
+            // If all questions in this tier have been used, reset the deck
+            if (availableSpells.length === 0) {
+                questionBank[difficulty].forEach(spell => spell.used = false);
+                availableSpells = questionBank[difficulty];
+            }
+
+            // Pick a random spell from the available ones
+            currentSpell = availableSpells[Math.floor(Math.random() * availableSpells.length)];
+            currentSpell.used = true; // Mark as used
+            
+            if(difficulty === 'easy') currentSpell.damage = 20;
+            if(difficulty === 'medium') currentSpell.damage = 30;
+            if(difficulty === 'hard') currentSpell.damage = 40;
+
+            elDialogue.style.display = 'none';
+            elCodeBox.style.display = 'block';
+            document.getElementById('code-prefix').innerText = currentSpell.prefix;
+            document.getElementById('code-suffix').innerText = currentSpell.suffix;
+            elInput.value = '';
+            elInput.focus();
+        }
+
+        function executeSpell() {
+            const userInput = elInput.value.replace(/\s+/g, '');
+            const correctAnswer = currentSpell.answer.replace(/\s+/g, '');
+            const altAnswer = currentSpell.altAnswer ? currentSpell.altAnswer.replace(/\s+/g, '') : null;
+
+            elCodeBox.style.display = 'none';
+            elDialogue.style.display = 'block';
+
+            if(userInput === correctAnswer || userInput === altAnswer) {
+                elDialogue.style.color = "var(--neon-green)";
+                elDialogue.innerText = "> SYNTAX CORRECT.\nEXECUTING SPELL...";
+                
+                setTimeout(() => {
+                    elPlayerAvatar.style.animation = "none";
+                    void elPlayerAvatar.offsetWidth;
+                    elPlayerAvatar.style.animation = "playerAttack 0.5s forwards";
+
+                    setTimeout(() => {
+                        enemy.hp -= currentSpell.damage;
+                        updateHUD();
+                        elEnemyAvatar.style.animation = "takeDamage 0.5s";
+                        showDamageNumber(currentSpell.damage, 'enemy', 'var(--neon-green)');
+                        
+                        elDialogue.innerText = `> SUCCESS!\nDealt ${currentSpell.damage} damage to ${enemy.name}.`;
+
+                        setTimeout(checkWinCondition, 1500);
+                    }, 250); 
+                }, 800);
+
+            } else {
+                elDialogue.style.color = "var(--neon-red)";
+                elDialogue.innerText = "> SYNTAX ERROR.\nATTACK FIZZLED.";
+                
+                setTimeout(() => {
+                    enemyTurn();
+                }, 1500);
+            }
+        }
+
+        function enemyTurn() {
+            elDialogue.style.color = "var(--neon-orange)";
+            elDialogue.innerText = `> ${enemy.name} is counter-attacking...`;
+            
+            setTimeout(() => {
+                elEnemyAvatar.style.animation = "none";
+                void elEnemyAvatar.offsetWidth;
+                elEnemyAvatar.style.animation = "enemyAttack 0.5s forwards";
+
+                setTimeout(() => {
+                    const dmg = 20; 
+                    player.hp -= dmg;
+                    updateHUD();
+                    elPlayerAvatar.style.animation = "takeDamage 0.5s";
+                    showDamageNumber(dmg, 'player', 'var(--neon-red)');
+                    
+                    elDialogue.style.color = "var(--neon-red)";
+                    elDialogue.innerText = `> CRITICAL ERROR!\nYou took ${dmg} damage!`;
+
+                    setTimeout(resetTurn, 1500);
+                }, 250);
+            }, 1000);
+        }
+
+        function checkWinCondition() {
+            if(enemy.hp <= 0) {
+                elDialogue.style.color = "var(--neon-blue)";
+                elDialogue.innerText = `> ${enemy.name} DELETED.\nPREPARING NEXT LEVEL...`;
+                elEnemyAvatar.style.opacity = '0';
+                
+                setTimeout(() => {
+                    currentLevel++;
+                    elEnemyAvatar.style.opacity = '1';
+                    initLevel();
+                }, 2500);
+            } else {
+                enemyTurn();
+            }
+        }
+
+        function resetTurn() {
+            if(player.hp <= 0) {
+                elDialogue.style.color = "var(--neon-red)";
+                elDialogue.innerText = "> FATAL ERROR. SYSTEM CRASHED.\nGAME OVER.";
+                elPlayerAvatar.style.opacity = '0';
+                return; 
+            }
+
+            menuBox.style.opacity = '1';
+            menuBox.style.pointerEvents = 'auto';
+            elDialogue.style.color = "var(--neon-blue)";
+            elDialogue.innerText = "Awaiting your next command...";
+            
+            elPlayerAvatar.style.animation = "float 2.5s infinite ease-in-out";
+            elEnemyAvatar.style.animation = "float 2s infinite ease-in-out reverse";
+        }
+
+        function showDamageNumber(amount, targetId, color) {
+            const target = document.getElementById(targetId).parentElement;
+            const floatDmg = document.createElement('div');
+            floatDmg.className = 'floating-damage';
+            floatDmg.style.color = color;
+            floatDmg.innerText = "-" + amount;
+            target.appendChild(floatDmg);
+            setTimeout(() => { floatDmg.remove(); }, 1000);
+        }
+
+        elInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                executeSpell();
+            }
+        });
+
+        initLevel();
+    </script>
+</body>
+</html>

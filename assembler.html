@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-Break: Full Stack Hacker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Orbitron:wght@500;700&display=swap');
+
+        :root {
+            --bg-color: #05050a;
+            --text-color: #e0e0e0;
+            --primary-glow: #00ffcc;
+            --panel-bg: rgba(10, 15, 25, 0.85);
+            --block-bg: rgba(0, 255, 204, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .hud {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            text-shadow: 0 0 5px var(--primary-glow);
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-glow);
+            text-align: center;
+            text-shadow: 0 0 10px var(--primary-glow);
+            margin-top: 0;
+            letter-spacing: 2px;
+        }
+
+        .mission-brief {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: rgba(255, 0, 255, 0.2);
+            color: #ff66ff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            border: 1px solid #ff66ff;
+        }
+
+        /* --- Puzzle Area --- */
+        .puzzle-container {
+            background: rgba(0,0,0,0.6);
+            border: 1px dashed #555;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .puzzle-title {
+            color: #ff66ff;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-shadow: 0 0 5px #ff66ff;
+        }
+
+        .block-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 50px;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: var(--block-bg);
+            border: 1px solid var(--primary-glow);
+            color: var(--primary-glow);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(0,255,204,0.2);
+        }
+
+        .code-block:hover {
+            background: var(--primary-glow);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* --- Terminal Area --- */
+        .terminal {
+            background: #000;
+            border: 1px solid #333;
+            border-left: 3px solid var(--primary-glow);
+            border-radius: 5px;
+            padding: 20px;
+            display: none;
+        }
+
+        .input-row { display: flex; align-items: center; margin-top: 10px; }
+        .prompt { color: #00ff66; margin-right: 10px; }
+        
+        input[type="text"] {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1em;
+            width: 100%;
+            outline: none;
+            border-bottom: 1px solid #444;
+        }
+
+        input[type="text"]:focus {
+            border-bottom-color: var(--primary-glow);
+        }
+
+        button {
+            background: transparent;
+            color: var(--primary-glow);
+            border: 1px solid var(--primary-glow);
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: var(--primary-glow);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        #feedback { text-align: center; margin-top: 15px; font-weight: bold; height: 20px;}
+    </style>
+</head>
+<body>
+
+    <div class="hud">
+        <div id="hud-level">Level: 1/10</div>
+        <div id="hud-rank">Rank: Script Kiddie</div>
+    </div>
+
+    <div class="panel">
+        <div style="text-align: center;">
+            <span class="category-tag" id="level-category">BEGINNER</span>
+        </div>
+        <h1 id="level-title">SYSTEM BOOT</h1>
+        <div class="mission-brief" id="mission-text">Loading instructions...</div>
+
+        <div class="puzzle-container" id="puzzle-zone">
+            <div class="puzzle-title">PHASE 1: VISUAL ASSEMBLY</div>
+            <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Scrambled Syntax:</div>
+            <div class="block-area" id="scrambled-blocks"></div>
+            
+            <div style="font-size: 0.8em; color: #888; margin-bottom: 5px; margin-top: 15px;">Assembly Buffer:</div>
+            <div class="block-area" id="assembly-blocks"></div>
+        </div>
+
+        <div class="terminal" id="terminal-zone">
+            <div style="color: #00ff66; margin-bottom: 10px;">> SYNTAX VERIFIED. MANUAL ENTRY REQUIRED.</div>
+            <div>Type the assembled code to commit to memory:</div>
+            <div class="input-row">
+                <span class="prompt">sys@core:~#</span>
+                <input type="text" id="code-input" autocomplete="off">
+            </div>
+            <button onclick="checkFinalCode()">COMMIT CODE</button>
+        </div>
+
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // The Complete C Programming Curriculum (Beginner to Pro)
+        const levels = [
+            // --- BEGINNER ---
+            {
+                category: "BEGINNER", rank: "Script Kiddie", title: "STANDARD OUTPUT",
+                brief: "The system needs to speak. Assemble the syntax to print 'Hello' to the console.",
+                blocks: [";", `"Hello"`, "printf", "(", ")"],
+                correctOrder: ["printf", "(", `"Hello"`, ")", ";"],
+                finalCode: 'printf("Hello");'
+            },
+            {
+                category: "BEGINNER", rank: "Script Kiddie", title: "DATA ALLOCATION",
+                brief: "Variables store data. Create an integer variable named 'power' and set it to 100.",
+                blocks: ["100", "=", "int", ";", "power"],
+                correctOrder: ["int", "power", "=", "100", ";"],
+                finalCode: "int power = 100;"
+            },
+            {
+                category: "BEGINNER", rank: "Junior Hacker", title: "STANDARD INPUT",
+                brief: "We need user input. Use scanf to read an integer. Remember the '&' to get the variable's memory address!",
+                blocks: [")", `"%d"`, "&power", "scanf", "(", ",", ";"],
+                correctOrder: ["scanf", "(", `"%d"`, ",", "&power", ")", ";"],
+                finalCode: 'scanf("%d",&power);'
+            },
+
+            // --- INTERMEDIATE ---
+            {
+                category: "INTERMEDIATE", rank: "Logic Weaver", title: "CONDITIONALS",
+                brief: "The system must make decisions. Write an 'if' statement checking if power is exactly equal to 100.",
+                blocks: ["100", "if", "(", ")", "power", "=="],
+                correctOrder: ["if", "(", "power", "==", "100", ")"],
+                finalCode: "if(power==100)"
+            },
+            {
+                category: "INTERMEDIATE", rank: "Logic Weaver", title: "ITERATION (LOOPS)",
+                brief: "We need to run a diagnostic 5 times. Assemble a standard 'for' loop header.",
+                blocks: ["i++", "int i=0;", "for", ")", "i<5;", "("],
+                correctOrder: ["for", "(", "int i=0;", "i<5;", "i++", ")"],
+                finalCode: "for(int i=0;i<5;i++)"
+            },
+            {
+                category: "INTERMEDIATE", rank: "Data Architect", title: "ARRAYS",
+                brief: "Store a sequence of data. Declare an integer array named 'keys' that holds 3 numbers.",
+                blocks: ["keys[3]", ";", "int", "{1, 2, 3}", "="],
+                correctOrder: ["int", "keys[3]", "=", "{1, 2, 3}", ";"],
+                finalCode: "int keys[3] = {1,2,3};"
+            },
+
+            // --- ADVANCED ---
+            {
+                category: "ADVANCED", rank: "Memory Manipulator", title: "POINTERS",
+                brief: "Pointers store memory addresses. Declare an integer pointer named 'ptr' and point it to the address of 'power'.",
+                blocks: ["=", "int", ";", "*ptr", "&power"],
+                correctOrder: ["int", "*ptr", "=", "&power", ";"],
+                finalCode: "int *ptr = &power;"
+            },
+            {
+                category: "ADVANCED", rank: "Memory Manipulator", title: "DEREFERENCING",
+                brief: "Change the value of 'power' using the pointer we just created. Set the value at the pointer to 0.",
+                blocks: ["0", "=", ";", "*ptr"],
+                correctOrder: ["*ptr", "=", "0", ";"],
+                finalCode: "*ptr = 0;"
+            },
+            {
+                category: "ADVANCED", rank: "System Architect", title: "STRUCTS",
+                brief: "Create a custom data type. Define a struct named 'User' containing an integer ID.",
+                blocks: ["int id;", "{", "struct", "};", "User"],
+                correctOrder: ["struct", "User", "{", "int id;", "};"],
+                finalCode: "struct User { int id; };"
+            },
+
+            // --- PRO LEVEL ---
+            {
+                category: "PRO LEVEL", rank: "Kernel Master", title: "DYNAMIC MEMORY",
+                brief: "Pro C programmers manage their own memory. Use malloc to allocate memory for one integer and assign it to 'ptr'.",
+                blocks: ["sizeof(int)", "malloc(", ");", "ptr", "=", "(int*)"],
+                correctOrder: ["ptr", "=", "(int*)", "malloc(", "sizeof(int)", ");"],
+                finalCode: "ptr = (int*)malloc(sizeof(int));"
+            }
+        ];
+
+        let currentLevel = 0;
+        let assembledSequence = [];
+
+        // UI Elements
+        const elScrambled = document.getElementById('scrambled-blocks');
+        const elAssembly = document.getElementById('assembly-blocks');
+        const elTerminal = document.getElementById('terminal-zone');
+        const elPuzzle = document.getElementById('puzzle-zone');
+        const elInput = document.getElementById('code-input');
+        const elFeedback = document.getElementById('feedback');
+        const elHudLevel = document.getElementById('hud-level');
+        const elHudRank = document.getElementById('hud-rank');
+        const elCategory = document.getElementById('level-category');
+
+        function loadLevel() {
+            if (currentLevel >= levels.length) {
+                document.querySelector('.panel').innerHTML = "<h1>SYSTEM OVERRIDE COMPLETE</h1><p style='text-align:center; color:#00ffcc; font-size: 1.2em;'>Status: KERNEL MASTER<br><br>You have successfully mastered the core concepts of C programming, from basic standard output to dynamic memory allocation.</p>";
+                return;
+            }
+
+            const level = levels[currentLevel];
+            
+            // Update HUD
+            elHudLevel.innerText = `Level: ${currentLevel + 1}/${levels.length}`;
+            elHudRank.innerText = `Rank: ${level.rank}`;
+            elCategory.innerText = level.category;
+
+            // Change glow color based on difficulty
+            if(level.category === "INTERMEDIATE") document.documentElement.style.setProperty('--primary-glow', '#ffaa00');
+            else if(level.category === "ADVANCED") document.documentElement.style.setProperty('--primary-glow', '#ff0055');
+            else if(level.category === "PRO LEVEL") document.documentElement.style.setProperty('--primary-glow', '#cc00ff');
+            else document.documentElement.style.setProperty('--primary-glow', '#00ffcc');
+
+            document.getElementById('level-title').innerText = level.title;
+            document.getElementById('mission-text').innerText = level.brief;
+            
+            assembledSequence = [];
+            elTerminal.style.display = 'none';
+            elPuzzle.style.display = 'block';
+            elPuzzle.style.opacity = '1';
+            elAssembly.innerHTML = '';
+            elScrambled.innerHTML = '';
+            elInput.value = '';
+            elFeedback.innerText = '';
+
+            // Render scrambled blocks (shuffle them slightly)
+            let shuffledBlocks = [...level.blocks].sort(() => Math.random() - 0.5);
+            shuffledBlocks.forEach(blockText => {
+                let btn = document.createElement('div');
+                btn.className = 'code-block';
+                btn.innerText = blockText;
+                btn.onclick = () => moveToAssembly(btn, blockText);
+                elScrambled.appendChild(btn);
+            });
+        }
+
+        function moveToAssembly(btn, blockText) {
+            elScrambled.removeChild(btn);
+            btn.onclick = () => returnToScrambled(btn, blockText);
+            elAssembly.appendChild(btn);
+            assembledSequence.push(blockText);
+            checkPuzzle();
+        }
+
+        function returnToScrambled(btn, blockText) {
+            elAssembly.removeChild(btn);
+            btn.onclick = () => moveToAssembly(btn, blockText);
+            elScrambled.appendChild(btn);
+            assembledSequence = assembledSequence.filter(b => b !== blockText);
+            elFeedback.innerText = "";
+        }
+
+        function checkPuzzle() {
+            const level = levels[currentLevel];
+            if (assembledSequence.length === level.correctOrder.length) {
+                let isCorrect = true;
+                for (let i = 0; i < assembledSequence.length; i++) {
+                    if (assembledSequence[i] !== level.correctOrder[i]) {
+                        isCorrect = false; break;
+                    }
+                }
+
+                if (isCorrect) {
+                    elFeedback.style.color = "var(--primary-glow)";
+                    elFeedback.innerText = "SYNTAX VERIFIED. TERMINAL UNLOCKED.";
+                    elPuzzle.style.opacity = '0.4'; 
+                    elTerminal.style.display = 'block';
+                    elInput.focus();
+                } else {
+                    elFeedback.style.color = "red";
+                    elFeedback.innerText = "LOGIC ERROR. REORDER THE BLOCKS.";
+                    elAssembly.animate([
+                        { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }
+                    ], { duration: 200 });
+                }
+            }
+        }
+
+        function checkFinalCode() {
+            const level = levels[currentLevel];
+            // Normalize spaces and quotes for validation
+            let userCode = elInput.value.replace(/\s+/g, '').replace(/'/g, '"');
+            let targetCode = level.finalCode.replace(/\s+/g, '').replace(/'/g, '"');
+
+            if (userCode === targetCode) {
+                elFeedback.style.color = "var(--primary-glow)";
+                elFeedback.innerText = "CODE COMMITTED. ADVANCING...";
+                currentLevel++;
+                setTimeout(loadLevel, 1500);
+            } else {
+                elFeedback.style.color = "red";
+                elFeedback.innerText = "COMPILER ERROR. CHECK YOUR TYPING.";
+                elTerminal.animate([
+                    { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }
+                ], { duration: 200 });
+            }
+        }
+
+        elInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                checkFinalCode();
+            }
+        });
+
+        // Initialize Game
+        loadLevel();
+    </script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Sagnic's Portfolio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --grid-color: rgba(0, 243, 255, 0.05);
+            --panel-bg: rgba(10, 15, 20, 0.85);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-base);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- BACKGROUND FX --- */
+        .cyber-grid {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            animation: gridMove 10s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid var(--neon-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            box-sizing: border-box;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* --- HERO SECTION --- */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            margin: 0;
+            background: linear-gradient(to right, var(--neon-cyan), var(--neon-pink));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #aaa;
+            margin-top: 10px;
+            max-width: 600px;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 50px;
+            color: var(--neon-cyan);
+            font-size: 2rem;
+            animation: bounce 2s infinite;
+            text-decoration: none;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        /* --- MAIN CONTAINER --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            font-size: 2.5rem;
+            border-bottom: 2px solid var(--neon-pink);
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+            display: inline-block;
+        }
+
+        /* --- ABOUT ME TERMINAL --- */
+        .terminal-box {
+            background: rgba(5, 5, 10, 0.9);
+            border: 1px solid #333;
+            border-left: 5px solid var(--neon-green);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            margin-bottom: 100px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .dot { width: 15px; height: 15px; border-radius: 50%; }
+        .d-red { background: #ff3333; }
+        .d-yel { background: #ffcc00; }
+        .d-grn { background: #33ff33; }
+
+        .prompt-text { color: var(--neon-green); margin-right: 10px; }
+        .code-comment { color: #888; }
+        .highlight { color: var(--neon-pink); font-weight: bold; }
+
+        /* Terminal Links Styling */
+        .terminal-link {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--neon-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .terminal-link:hover {
+            color: var(--neon-pink);
+            border-bottom-color: var(--neon-pink);
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        /* --- GAMES GRID --- */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .game-card {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--neon-cyan);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 243, 255, 0.1);
+            border-color: rgba(0, 243, 255, 0.5);
+        }
+
+        .game-card:hover::before { transform: scaleX(1); }
+
+        .card-tag {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: rgba(255, 0, 234, 0.2);
+            color: var(--neon-pink);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--neon-pink);
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #fff;
+            margin: 20px 0 15px 0;
+        }
+
+        .card-desc {
+            color: #aaa;
+            font-size: 1rem;
+            flex-grow: 1;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .play-btn {
+            display: inline-block;
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 12px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            border-radius: 5px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .play-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        /* Specific Card Colors */
+        .card-assembler:hover::before { background: var(--neon-cyan); }
+        .card-assembler .play-btn { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+        .card-assembler .play-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan);}
+
+        .card-rpg:hover::before { background: var(--neon-green); }
+        .card-rpg .play-btn { border-color: var(--neon-green); color: var(--neon-green); }
+        .card-rpg .play-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green);}
+
+        .card-arcade:hover::before { background: var(--neon-pink); }
+        .card-arcade .play-btn { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .card-arcade .play-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink);}
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #000;
+            border-top: 1px solid #333;
+            color: #666;
+            margin-top: 50px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <div class="nav-links">
+            <a href="#about">ABOUT</a>
+            <a href="#modules">TRAINING MODULES</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1 class="hero-title">LEARN C BY SURVIVING IT</h1>
+        <p class="hero-subtitle">An interactive, gamified curriculum designed to teach C programming through syntax puzzles, RPG combat, and arcade survival.</p>
+        <a href="#modules" class="scroll-down">↓</a>
+    </header>
+
+    <div class="container">
+        
+        <div id="about">
+            <h2 class="section-title">WHOAMI</h2>
+            <div class="terminal-box">
+                <div class="terminal-header">
+                    <div class="dot d-red"></div>
+                    <div class="dot d-yel"></div>
+                    <div class="dot d-grn"></div>
+                </div>
+                <div><span class="prompt-text">admin@server:~$</span> <span class="code-comment">// Querying developer profile...</span></div>
+                <div><span class="prompt-text">admin@server:~$</span> cat about_me.txt</div>
+                <br>
+                <div style="padding-left: 20px; border-left: 2px solid #333;">
+                    <strong>Developer Name:</strong> <span class="highlight">Sagnic Bhattacharyya</span><br>
+                    <strong>Email:</strong> <a href="mailto:bhattacharyya.sagnic@gmail.com" class="terminal-link">bhattacharyya.sagnic@gmail.com</a><br>
+                    <strong>Mission:</strong> To eliminate the boredom of traditional coding tutorials.<br><br>
+                    I am a software developer passionate about building interactive, logic-driven systems. After working on diverse projects—from app development to system architecture—I realized that mastering the fundamentals of <span style="color: var(--neon-cyan);">C programming</span> shouldn't mean just staring at a textbook.<br><br>
+                    I built the <strong>C-BREAK OS</strong> to turn coding concepts into real gameplay mechanics. Here, you don't just read about loops and pointers—you use them to fight off syntax bugs and defend system cores.
+                </div>
+                <br>
+                <div><span class="prompt-text">admin@server:~$</span> <span class="blink">_</span></div>
+            </div>
+        </div>
+
+        <div id="modules">
+            <h2 class="section-title">ACTIVE MODULES</h2>
+            
+            <div class="games-grid">
+                
+                <div class="game-card card-assembler">
+                    <div class="card-tag">LEVEL 1-10</div>
+                    <h3 class="card-title">Syntax Assembler</h3>
+                    <p class="card-desc">Master the basics of C without typing a single line. Decrypt scrambled code blocks by clicking and dragging them into the assembly buffer. Build muscle memory for standard output, inputs, and logic structures.</p>
+                    <a href="assembler.html" class="play-btn">INITIATE TRAINING</a>
+                </div>
+
+                <div class="game-card card-rpg">
+                    <div class="card-tag">TACTICAL COMBAT</div>
+                    <h3 class="card-title">Kernel Panic: C-RPG</h3>
+                    <p class="card-desc">A turn-based retro RPG battle system. Face off against the Syntax Bug and Data Titans. Choose your difficulty level, complete the fragmented code, and execute powerful Logic Strikes to drain the enemy's HP.</p>
+                    <a href="rpg.html" class="play-btn">ENTER ARENA</a>
+                </div>
+
+                <div class="game-card card-arcade">
+                    <div class="card-tag">SURVIVAL MODE</div>
+                    <h3 class="card-title">Bitwise Assault</h3>
+                    <p class="card-desc">A high-speed 3D Synthwave shooter. The system core is under attack. Evaluate complex bitwise operations, memory sizes, and pointer math in your head to fire the turret before the grid is overrun.</p>
+                    <a href="arcade.html" class="play-btn">DEFEND THE CORE</a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>C-BREAK OS v1.0 | Developed by Sagnic Bhattacharyya</p>
+    </footer>
+
+    <script>
+        // Blinking cursor effect for the terminal
+        setInterval(() => {
+            const cursor = document.querySelector('.blink');
+            cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+        }, 500);
+    </script>
+</body>
+</html>
