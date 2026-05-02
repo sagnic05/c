@@ -43,5 +43,5 @@ Because this project uses vanilla web technologies, running it is incredibly sim
 Play the game live in your browser here: [Insert GitHub Pages Link]
 
 ## 👨‍💻 Developer
-**Sagnic Bhattacharyya**
+ **Sagnic Bhattacharyya **
 * **Mission:** To make computer science education genuinely fun and interactive.
