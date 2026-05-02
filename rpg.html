@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel Panic: C-RPG</title>
+    <title>Kernel Panic: C-RPG V3.1 (Victory Edition)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&display=swap');
 
@@ -17,264 +17,96 @@
             --panel-bg: rgba(20, 20, 35, 0.9);
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            color: white;
-            font-family: 'Fira Code', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
+        body { margin: 0; padding: 0; background-color: var(--bg); background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px; color: white; font-family: 'Fira Code', monospace; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 
-        .game-console {
-            width: 850px;
-            height: 650px;
-            background: var(--panel-bg);
-            border: 2px solid var(--neon-blue);
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+        .scanlines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 99; opacity: 0.4;}
 
-        /* --- HUD --- */
-        .top-hud {
-            text-align: center;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.8em;
-            padding: 10px;
-            color: var(--neon-pink);
-            border-bottom: 2px solid #333;
-            text-shadow: 0 0 5px var(--neon-pink);
-        }
+        .top-nav { width: 850px; display: flex; justify-content: flex-start; margin-bottom: 10px; z-index: 10;}
+        .return-link { color: #888; text-decoration: none; font-family: 'Press Start 2P', cursive; font-size: 0.6em; transition: color 0.2s;}
+        .return-link:hover { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
 
-        /* --- BATTLE ARENA --- */
-        .arena {
-            flex: 2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 40px 60px;
-            position: relative;
-            border-bottom: 2px solid #333;
-            background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
-        }
+        .game-console { width: 850px; height: 650px; background: var(--panel-bg); border: 2px solid var(--neon-blue); border-radius: 10px; box-shadow: 0 0 30px rgba(0, 243, 255, 0.2); display: flex; flex-direction: column; position: relative; z-index: 10;}
+        .top-hud { text-align: center; font-family: 'Press Start 2P', cursive; font-size: 0.8em; padding: 10px; color: var(--neon-pink); border-bottom: 2px solid #333; text-shadow: 0 0 5px var(--neon-pink); }
 
-        .entity {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 220px;
-            position: relative; /* BUG FIX: Anchors the absolute text to this specific column */
-            margin-top: 15px; /* Gives room for the top text */
-        }
+        .arena { flex: 2; display: flex; justify-content: space-between; align-items: center; padding: 40px 60px; position: relative; border-bottom: 2px solid #333; background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%); }
+        .entity { display: flex; flex-direction: column; align-items: center; width: 220px; position: relative; margin-top: 15px; }
 
-        /* Health Bars */
-        .hp-box {
-            width: 100%;
-            background: #222;
-            border: 2px solid #fff;
-            height: 20px;
-            margin-bottom: 35px; /* BUG FIX: Increased to make room for the numbers below */
-            position: relative;
-            box-shadow: 0 0 10px rgba(255,255,255,0.2);
-        }
+        .hp-box { width: 100%; background: #222; border: 2px solid #fff; height: 20px; margin-bottom: 35px; position: relative; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .hp-bar { height: 100%; width: 100%; background: var(--neon-green); transition: width 0.3s ease, background-color 0.3s ease; }
+        .hp-text { position: absolute; top: -28px; left: 0; font-family: 'Press Start 2P', cursive; font-size: 0.55em; color: #fff; background: rgba(0, 0, 0, 0.85); padding: 5px 8px; border-radius: 4px; border: 1px solid #555; white-space: nowrap; }
+        .hp-numbers { position: absolute; top: 25px; right: 0; font-size: 0.8em; color: #fff; background: rgba(0, 0, 0, 0.85); padding: 3px 6px; border-radius: 4px; border: 1px solid #555; font-weight: bold; }
 
-        .hp-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--neon-green);
-            transition: width 0.3s ease, background-color 0.3s ease;
-        }
+        .avatar { font-size: 80px; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; border-radius: 50%; background: rgba(0,0,0,0.5); border: 2px solid; position: relative; transition: transform 0.1s; }
+        .player-avatar { border-color: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue); animation: float 2.5s infinite ease-in-out; }
+        .enemy-avatar { border-color: var(--neon-red); box-shadow: 0 0 20px var(--neon-red), inset 0 0 20px var(--neon-red); animation: float 2s infinite ease-in-out reverse; }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes playerAttack { 0% { transform: translateX(0); } 50% { transform: translateX(200px) scale(1.2); } 100% { transform: translateX(0); } }
+        @keyframes enemyAttack { 0% { transform: translateX(0); } 50% { transform: translateX(-200px) scale(1.2); } 100% { transform: translateX(0); } }
+        @keyframes takeDamage { 0%, 100% { filter: brightness(1); transform: translateX(0); } 25% { filter: brightness(3) drop-shadow(0 0 20px red); transform: translateX(-10px) rotate(-5deg); } 75% { transform: translateX(10px) rotate(5deg); } }
+        @keyframes flashScreen { 0% { background-color: #fff; } 100% { background-color: var(--bg); } }
 
-        /* UI TEXT */
-        .hp-text {
-            position: absolute;
-            top: -28px;
-            left: 0;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.55em;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.85); 
-            padding: 5px 8px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            white-space: nowrap;
-        }
+        .ui-panel { flex: 1.2; display: flex; background: #000; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+        .menu { flex: 1; padding: 20px; border-right: 2px solid #333; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+        .menu button { background: transparent; border: 1px solid; font-family: 'Press Start 2P', cursive; font-size: 0.55em; padding: 15px; cursor: pointer; text-align: left; transition: all 0.2s; line-height: 1.5; }
+        .btn-easy { border-color: var(--neon-green); color: var(--neon-green); } .btn-easy:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+        .btn-med { border-color: var(--neon-orange); color: var(--neon-orange); } .btn-med:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 10px var(--neon-orange); }
+        .btn-hard { border-color: var(--neon-red); color: var(--neon-red); } .btn-hard:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
 
-        .hp-numbers {
-            position: absolute;
-            top: 25px;
-            right: 0;
-            font-size: 0.8em;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.85); 
-            padding: 3px 6px;
-            border-radius: 4px;
-            border: 1px solid #555;
-            font-weight: bold;
-        }
+        .action-screen { flex: 2; padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+        .dialogue { font-family: 'Press Start 2P', cursive; font-size: 0.7em; line-height: 1.6; color: var(--neon-blue); margin-bottom: 20px; }
+        
+        .code-box { display: none; background: #111; padding: 20px; border-left: 4px solid var(--neon-blue); font-size: 1.2em; position: relative; }
+        .code-box input { background: transparent; border: none; border-bottom: 2px solid var(--neon-pink); color: #fff; font-family: 'Fira Code', monospace; font-size: 1em; width: 120px; outline: none; text-align: center; }
+        .code-box input:focus { border-bottom-color: var(--neon-blue); }
 
-        /* Character Avatars */
-        .avatar {
-            font-size: 80px;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            border: 2px solid;
-            position: relative;
-            transition: transform 0.1s;
-        }
+        .execute-btn { background: rgba(0, 255, 102, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 0.55em; cursor: pointer; transition: all 0.3s; border-radius: 4px; box-shadow: 0 0 10px rgba(0, 255, 102, 0.2); width: 100%; margin-top: 15px;}
+        .execute-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
 
-        .player-avatar {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
-            animation: float 2.5s infinite ease-in-out;
-        }
+        .hint-container { margin-top: 20px; width: 100%; border-top: 1px dashed #444; padding-top: 15px; display: flex; flex-direction: column; align-items: center;}
+        .hint-btn { background: rgba(255, 170, 0, 0.1); color: var(--neon-orange); border: 1px solid var(--neon-orange); padding: 8px 15px; font-family: 'Press Start 2P', cursive; font-size: 0.55em; cursor: pointer; transition: all 0.3s; border-radius: 4px; box-shadow: 0 0 10px rgba(255, 170, 0, 0.2); animation: pulseHint 2s infinite;}
+        @keyframes pulseHint { 0%, 100% { box-shadow: 0 0 5px rgba(255, 170, 0, 0.2); } 50% { box-shadow: 0 0 15px rgba(255, 170, 0, 0.6); } }
+        .hint-btn:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 20px var(--neon-orange); animation: none; }
+        .hint-btn:disabled { opacity: 0.4; pointer-events: none; border-color: #555; color: #555; background: transparent; box-shadow: none; animation: none; }
+        
+        .hint-box { display: none; width: 90%; margin-top: 15px; background: rgba(255, 170, 0, 0.1); border: 1px solid var(--neon-orange); border-left: 4px solid var(--neon-orange); padding: 10px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.9em; color: #fff; box-shadow: 0 0 15px rgba(255, 170, 0, 0.15); animation: slideDownFade 0.3s ease-out forwards; }
+        .hint-box-header { font-family: 'Press Start 2P', cursive; font-size: 0.55em; color: var(--neon-orange); margin-bottom: 8px; border-bottom: 1px dashed var(--neon-orange); padding-bottom: 5px; }
+        @keyframes slideDownFade { 0% { opacity: 0; transform: translateY(-10px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .enemy-avatar {
-            border-color: var(--neon-red);
-            box-shadow: 0 0 20px var(--neon-red), inset 0 0 20px var(--neon-red);
-            animation: float 2s infinite ease-in-out reverse;
-        }
+        .floating-damage { position: absolute; font-family: 'Press Start 2P', cursive; font-size: 2em; font-weight: bold; animation: floatUp 1s forwards; pointer-events: none; opacity: 0; z-index: 100; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-80px) scale(1.5); opacity: 0; } }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+        .overlay h1 { font-family: 'Press Start 2P', cursive; font-size: 2em; color: var(--neon-red); text-align: center;}
+        .overlay p { font-family: 'Press Start 2P', cursive; font-size: 0.8em; color: #fff; text-align: center; line-height: 1.5; margin-bottom: 30px;}
+        .overlay button, .overlay a { background: transparent; margin-top: 20px; color: var(--neon-cyan); text-decoration: none; font-family: 'Press Start 2P', cursive; font-size: 0.8em; border: 1px solid var(--neon-cyan); padding: 15px; cursor: pointer; transition: all 0.3s;}
+        .overlay button:hover, .overlay a:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan);}
 
-        /* Combat Animations */
-        @keyframes playerAttack {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(200px) scale(1.2); }
-            100% { transform: translateX(0); }
-        }
-
-        @keyframes enemyAttack {
-            0% { transform: translateX(0); }
-            50% { transform: translateX(-200px) scale(1.2); }
-            100% { transform: translateX(0); }
-        }
-
-        @keyframes takeDamage {
-            0%, 100% { filter: brightness(1); transform: translateX(0); }
-            25% { filter: brightness(3) drop-shadow(0 0 20px red); transform: translateX(-10px) rotate(-5deg); }
-            75% { transform: translateX(10px) rotate(5deg); }
-        }
-
-        /* --- UI PANEL --- */
-        .ui-panel {
-            flex: 1.2;
-            display: flex;
-            background: #000;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-
-        .menu {
-            flex: 1;
-            padding: 20px;
-            border-right: 2px solid #333;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .menu button {
-            background: transparent;
-            border: 1px solid;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.55em;
-            padding: 15px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s;
-            line-height: 1.5;
-        }
-
-        .btn-easy { border-color: var(--neon-green); color: var(--neon-green); }
-        .btn-easy:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
-
-        .btn-med { border-color: var(--neon-orange); color: var(--neon-orange); }
-        .btn-med:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 10px var(--neon-orange); }
-
-        .btn-hard { border-color: var(--neon-red); color: var(--neon-red); }
-        .btn-hard:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 10px var(--neon-red); }
-
-        .action-screen {
-            flex: 2;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .dialogue {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.7em;
-            line-height: 1.6;
-            color: var(--neon-blue);
-            margin-bottom: 20px;
-        }
-
-        /* Coding Input */
-        .code-box {
-            display: none;
-            background: #111;
-            padding: 20px;
-            border-left: 4px solid var(--neon-blue);
-            font-size: 1.2em;
-        }
-
-        .code-box input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid var(--neon-pink);
-            color: #fff;
-            font-family: 'Fira Code', monospace;
-            font-size: 1em;
-            width: 120px;
-            outline: none;
-            text-align: center;
-        }
-
-        .code-box input:focus {
-            border-bottom-color: var(--neon-blue);
-        }
-
-        .floating-damage {
-            position: absolute;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 2em;
-            font-weight: bold;
-            animation: floatUp 1s forwards;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 100;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
-        }
-
+        /* Specific Briefing Box styling */
+        .overlay-box { max-width: 600px; padding: 30px; border: 2px dashed var(--neon-green); background: rgba(0,0,0,0.8); border-radius: 10px; box-shadow: 0 0 30px rgba(0, 255, 102, 0.2); margin-bottom: 20px;}
+        .overlay-box h2 { font-family: 'Press Start 2P', cursive; font-size: 1.2em; color: var(--neon-green); text-align: center; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px;}
+        .overlay-box p { color: #ccc; line-height: 1.6; font-size: 1em; font-family: 'Fira Code', monospace; text-align: left;}
+        .overlay-box strong { color: #fff; }
     </style>
 </head>
 <body>
+    <div class="scanlines"></div>
+    <div class="top-nav"><a href="index.html" class="return-link">< RETURN TO OS</a></div>
+
+    <!-- MISSION BRIEFING OVERLAY -->
+    <div class="overlay" id="boot-screen" style="display: flex;">
+        <div class="overlay-box">
+            <h2>MODULE: KERNEL PANIC</h2>
+            <p><strong>> OBJECTIVE:</strong> Defeat malware entities in turn-based combat using C syntax attacks.</p>
+            <p><strong>> HOW TO PLAY:</strong> Select your attack difficulty (Easy, Medium, or Hard). Complete the missing C syntax in the terminal and click 'EXECUTE SPELL' to deal damage. If you are stuck, you have 3 Hints per run.</p>
+            <p><strong>> COMBAT STATS:</strong><br>
+            <span style="color: var(--neon-green);">Easy Strike = 20 DMG</span><br>
+            <span style="color: var(--neon-orange);">Logic Strike = 30 DMG</span><br>
+            <span style="color: var(--neon-red);">Kernel Smash = 40 DMG</span></p>
+            <p><strong>> PROGRESSION:</strong> Survive all 3 stages and defeat the Data Titan to earn the [RPG Cleared] badge.</p>
+        </div>
+        <button onclick="startModule()">INITIATE MODULE</button>
+    </div>
 
     <div class="game-console">
         <div class="top-hud" id="level-display">LEVEL: 1/3 - INITIALIZING...</div>
@@ -282,18 +114,13 @@
         <div class="arena">
             <div class="entity">
                 <div class="hp-text">HACKER (YOU)</div>
-                <div class="hp-box">
-                    <div class="hp-bar" id="player-hp-bar"></div>
-                </div>
+                <div class="hp-box"><div class="hp-bar" id="player-hp-bar"></div></div>
                 <div class="hp-numbers" id="player-hp-num">100/100</div>
                 <div class="avatar player-avatar" id="player">🧑‍💻</div>
             </div>
-
             <div class="entity">
                 <div class="hp-text" id="enemy-name">???</div>
-                <div class="hp-box">
-                    <div class="hp-bar" id="enemy-hp-bar" style="background: var(--neon-red);"></div>
-                </div>
+                <div class="hp-box"><div class="hp-bar" id="enemy-hp-bar" style="background: var(--neon-red);"></div></div>
                 <div class="hp-numbers" id="enemy-hp-num">???/???</div>
                 <div class="avatar enemy-avatar" id="enemy">❓</div>
             </div>
@@ -301,275 +128,370 @@
 
         <div class="ui-panel">
             <div class="menu" id="menu-box">
-                <button class="btn-easy" onclick="startAttack('easy')">> BASIC ATTACK<br>[EASY: 20 DMG]</button>
-                <button class="btn-med" onclick="startAttack('medium')">> LOGIC STRIKE<br>[MEDIUM: 30 DMG]</button>
-                <button class="btn-hard" onclick="startAttack('hard')">> KERNEL SMASH<br>[HARD: 40 DMG]</button>
+                <button type="button" class="btn-easy" onclick="startAttack('easy')">> BASIC ATTACK<br>[EASY: 20 DMG]</button>
+                <button type="button" class="btn-med" onclick="startAttack('medium')">> LOGIC STRIKE<br>[MEDIUM: 30 DMG]</button>
+                <button type="button" class="btn-hard" onclick="startAttack('hard')">> KERNEL SMASH<br>[HARD: 40 DMG]</button>
             </div>
 
             <div class="action-screen">
                 <div class="dialogue" id="dialogue">System ready. Awaiting command...</div>
-                
                 <div class="code-box" id="code-box">
                     <span style="color: #888; font-size: 0.8em;">Complete the syntax to cast:</span><br><br>
                     <span id="code-prefix"></span>
                     <input type="text" id="spell-input" autocomplete="off">
                     <span id="code-suffix"></span>
+                    
+                    <button type="button" class="execute-btn" onclick="executeSpell()">> EXECUTE SPELL</button>
+
+                    <div class="hint-container">
+                        <button type="button" class="hint-btn" id="hint-btn" onclick="useHint()">[?] DECRYPT HINT (3 LEFT)</button>
+                        <div class="hint-box" id="hint-box">
+                            <div class="hint-box-header">:: SYSTEM ASSIST OVERRIDE ::</div>
+                            <div id="hint-text"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <div class="overlay" id="end-screen">
+            <h1 id="end-text">GAME OVER</h1>
+            <p id="end-desc"></p>
+            <a href="rpg.html" id="retry-btn" onclick="resetGame()">REBOOT SYSTEM</a>
+            <a href="index.html" id="return-btn" style="display:none; margin-top: 10px;">RETURN TO OS</a>
         </div>
     </div>
 
     <script>
-        // --- GAME DATA ---
-        let currentLevel = 0;
-        let player = { hp: 100, maxHp: 100 };
-        let currentSpell = null;
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        let audioCtx = null;
+        function playSound(type) {
+            try {
+                if (!window.AudioContext && !window.webkitAudioContext) return;
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') { audioCtx.resume().catch(() => {}); if (audioCtx.state === 'suspended') return; }
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+                
+                if (type === 'click') { osc.type = 'square'; osc.frequency.setValueAtTime(400, now); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.1); osc.start(now); osc.stop(now + 0.1); } 
+                else if (type === 'attack') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.3); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); } 
+                else if (type === 'hit') { osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.4); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4); osc.start(now); osc.stop(now + 0.4); } 
+                else if (type === 'error') { osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); } 
+                else if (type === 'levelup') { osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.linearRampToValueAtTime(880, now + 0.4); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.5); osc.start(now); osc.stop(now + 0.5); } 
+                else if (type === 'hint') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+                else if (type === 'victory') {
+                    const freqs = [440, 554.37, 659.25, 880]; 
+                    freqs.forEach((freq, i) => {
+                        const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                        vOsc.type = 'square'; vOsc.frequency.value = freq;
+                        vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                        vGain.gain.setValueAtTime(0, now + i * 0.15);
+                        vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05);
+                        vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                        vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                    });
+                }
+            } catch (error) {}
+        }
+
+        let currentLevel = 0; let player = { hp: 100, maxHp: 100 }; let hintsRemaining = 3; let currentSpell = null; let isExecuting = false; 
         
-        // Enemy Progression
         const levels = [
-            { name: "SYNTAX BUG", maxHp: 80, avatar: "👾", color: "var(--neon-green)" },
-            { name: "LOGIC WORM", maxHp: 150, avatar: "🐛", color: "var(--neon-orange)" },
-            { name: "DATA TITAN", maxHp: 240, avatar: "🤖", color: "var(--neon-red)" }
+            { name: "SYNTAX BUG", maxHp: 80, avatar: "👾", color: "var(--neon-green)", enemyDmg: 15 },
+            { name: "LOGIC WORM", maxHp: 150, avatar: "🐛", color: "var(--neon-orange)", enemyDmg: 25 },
+            { name: "DATA TITAN", maxHp: 240, avatar: "🤖", color: "var(--neon-red)", enemyDmg: 35 }
         ];
+        let enemy = { hp: 0, maxHp: 0, name: "", avatar: "", enemyDmg: 0 };
 
-        let enemy = { hp: 0, maxHp: 0, name: "", avatar: "" };
-
-        // Expanded Question Bank
         const questionBank = {
-            easy: [
-                { prefix: 'printf("Hello', suffix: ');', answer: '"' },
-                { prefix: 'int health ', suffix: ' 100;', answer: '=' },
-                { prefix: 'char grade = ', suffix: 'A\';', answer: '\'' },
-                { prefix: 'return ', suffix: ';', answer: '0' },
-                { prefix: '#include <stdio.', suffix: '>', answer: 'h' },
-                { prefix: 'int score = 50', suffix: '', answer: ';' },
-                { prefix: 'scanf("%d"', suffix: ' &health);', answer: ',' },
-                { prefix: 'void main(', suffix: ' {', answer: ')' },
-                { prefix: 'float pi = 3.', suffix: '4;', answer: '1' },
-                { prefix: 'printf("\\', suffix: '"); // newline', answer: 'n' }
+            easy: [ 
+                { id: "e1", prefix: 'printf("Hello', suffix: ');', answer: '"', hint: 'Strings in C must be enclosed in double quotes.' }, 
+                { id: "e2", prefix: 'int health ', suffix: ' 100;', answer: '=', hint: 'Use the assignment operator to set a value.' }, 
+                { id: "e3", prefix: 'char grade = ', suffix: 'A\';', answer: '\'', hint: 'Single characters require single quotes.' }, 
+                { id: "e4", prefix: '#include <stdio.', suffix: '>', answer: 'h', hint: 'Standard I/O is a header (.h) file.' }, 
+                { id: "e5", prefix: 'int score = 50', suffix: '', answer: ';', hint: 'Every statement in C must end with a semicolon.' }, 
+                { id: "e6", prefix: 'scanf("%d"', suffix: ' &health);', answer: ',', hint: 'Separate arguments in a function with a comma.' },
+                { id: "e7", prefix: 'void main(', suffix: ' {', answer: ')', hint: 'Function declarations need opening and closing parentheses.' }, 
+                { id: "e8", prefix: 'float pi = 3.', suffix: '4;', answer: '1', hint: 'Pi is 3.14...' }, 
+                { id: "e9", prefix: 'printf("\\', suffix: '"); // newline', answer: 'n', hint: 'The escape sequence for a newline is \\n' },
+                { id: "e10", prefix: 'return ', suffix: ';', answer: '0', hint: 'A successful main function traditionally returns zero.' },
+                { id: "e11", prefix: 'int x = 5 + ', suffix: '; // ten', answer: '5', hint: 'Basic math: 5 + 5 = 10' }, 
+                { id: "e12", prefix: 'char initial = ', suffix: 'S\';', answer: '\'', hint: 'Single quotes for a char.' },
+                { id: "e13", prefix: 'double d = 5.', suffix: ';', answer: '5', hint: 'Add a decimal digit.' }, 
+                { id: "e14", prefix: 'printf("%', suffix: '", score);', answer: 'd', hint: 'The format specifier for an integer is %d.' },
+                { id: "e15", prefix: 'scanf("%c", ', suffix: 'grade);', answer: '&', hint: 'scanf requires the memory address of the variable.' }, 
+                { id: "e16", prefix: '/', suffix: ' This is a comment', answer: '/', hint: 'Single-line comments start with //' },
+                { id: "e17", prefix: 'int a', suffix: ' b;', answer: ',', hint: 'Declare multiple variables by separating them with a comma.' }, 
+                { id: "e18", prefix: 'x = y ', suffix: ' 2; // multiply', answer: '*', hint: 'The multiplication operator is an asterisk.' },
+                { id: "e19", prefix: 'printf("Total: %', suffix: '", cost);', answer: 'f', hint: 'The format specifier for a float is %f.' }, 
+                { id: "e20", prefix: 'bool isAlive = ', suffix: 'ue;', answer: 'tr', hint: 'Boolean values are true or false.' }
             ],
-            medium: [
-                { prefix: 'if(hp ', suffix: ' 0) { die(); }', answer: '<=' },
-                { prefix: 'for(int i=0; i<10; i', suffix: ')', answer: '++' },
-                { prefix: 'while(alive ', suffix: ' true)', answer: '==' },
-                { prefix: 'int arr[', suffix: '] = {1, 2, 3};', answer: '3' },
-                { prefix: 'if(x != ', suffix: ') { // if not zero', answer: '0' },
-                { prefix: 'do { x++; } ', suffix: '(x < 5);', answer: 'while' },
-                { prefix: 'switch(choice', suffix: ' {', answer: ')' },
-                { prefix: 'else ', suffix: ' (x == 1)', answer: 'if' },
-                { prefix: 'int sum(int a, int ', suffix: ')', answer: 'b' },
-                { prefix: 'printf("%', suffix: '", integer_var);', answer: 'd' }
+            medium: [ 
+                { id: "m1", prefix: 'if(hp ', suffix: ' 0)', answer: '<=', hint: 'Less than or equal to operator.' }, 
+                { id: "m2", prefix: 'for(int i=0; i<10; i', suffix: ')', answer: '++', hint: 'Increment operator to add 1.' }, 
+                { id: "m3", prefix: 'int arr[', suffix: '] = {1, 2, 3};', answer: '3', hint: 'The array has three elements.' }, 
+                { id: "m4", prefix: 'while(alive ', suffix: ' true)', answer: '==', hint: 'The equality check requires two equals signs.' }, 
+                { id: "m5", prefix: 'if(x != ', suffix: ') // if not zero', answer: '0', hint: 'Zero.' }, 
+                { id: "m6", prefix: 'do { x++; } ', suffix: '(x < 5);', answer: 'while', hint: 'A do-while loop.' },
+                { id: "m7", prefix: 'switch(choice', suffix: ' {', answer: ')', hint: 'Close the parentheses for the switch statement.' }, 
+                { id: "m8", prefix: 'else ', suffix: ' (x == 1)', answer: 'if', hint: 'To chain conditions, use "else if".' }, 
+                { id: "m9", prefix: 'int sum(int a, int ', suffix: ')', answer: 'b', hint: 'Name the second parameter.' }, 
+                { id: "m10", prefix: 'printf("%', suffix: '", integer_var);', answer: 'd', hint: 'Integer format specifier.' },
+                { id: "m11", prefix: 'for(int i=10; i>0; i', suffix: ')', answer: '--', hint: 'Decrement operator to subtract 1.' }, 
+                { id: "m12", prefix: 'if(a > b ', suffix: ' b > c) // AND', answer: '&&', hint: 'Logical AND operator.' },
+                { id: "m13", prefix: 'if(x == 1 ', suffix: ' x == 2) // OR', answer: '||', hint: 'Logical OR operator.' }, 
+                { id: "m14", prefix: 'break', suffix: '', answer: ';', hint: 'End the statement.' },
+                { id: "m15", prefix: 'continue', suffix: ';', answer: 'continue', altAnswer: '', hint: 'Skips the rest of the loop iteration.' }, 
+                { id: "m16", prefix: 'int arr[', suffix: ' = {1,2};', answer: ']', hint: 'Close the array brackets.' },
+                { id: "m17", prefix: 'arr[', suffix: '] = 5; // first item', answer: '0', hint: 'Arrays in C are zero-indexed.' }, 
+                { id: "m18", prefix: 'return x ', suffix: ' y; // add', answer: '+', hint: 'Addition operator.' },
+                { id: "m19", prefix: 'switch(x) { ', suffix: ' 1:', answer: 'case', hint: 'Matches a specific value in a switch block.' }, 
+                { id: "m20", prefix: 'default', suffix: ' break;', answer: ':', hint: 'Cases and default statements end with a colon.' }
             ],
-            hard: [
-                { prefix: 'int ', suffix: 'ptr = &enemy;', answer: '*' },
-                { prefix: 'scanf("%d", ', suffix: 'damage);', answer: '&' },
-                { prefix: 'ptr = (int*)', suffix: '(sizeof(int));', answer: 'malloc' },
-                { prefix: 'enemy', suffix: 'hp -= 40;', answer: '->', altAnswer: '.' },
-                { prefix: 'free(', suffix: ');', answer: 'ptr' },
-                { prefix: 'FILE *fp = ', suffix: '("data.txt", "r");', answer: 'fopen' },
-                { prefix: 'struct Player ', suffix: ' int hp; };', answer: '{' },
-                { prefix: 'printf("%', suffix: '", string_ptr);', answer: 's' },
-                { prefix: '*(ptr + 1) ', suffix: ' 5;', answer: '=' },
-                { prefix: 'typedef struct ', suffix: ' Node;', answer: '{' }
+            hard: [ 
+                { id: "h1", prefix: 'int ', suffix: 'ptr = &enemy;', answer: '*', hint: 'Declare a pointer using an asterisk.' }, 
+                { id: "h2", prefix: 'ptr = (int*)', suffix: '(sizeof(int));', answer: 'malloc', hint: 'Memory allocation function.' }, 
+                { id: "h3", prefix: 'enemy', suffix: 'hp -= 40;', answer: '->', altAnswer: '.', hint: 'Arrow operator (->) to access struct members from a pointer.' }, 
+                { id: "h4", prefix: 'scanf("%d", ', suffix: 'damage);', answer: '&', hint: 'Address-of operator.' }, 
+                { id: "h5", prefix: 'free(', suffix: ');', answer: 'ptr', hint: 'Pass the pointer to free memory.' }, 
+                { id: "h6", prefix: 'FILE *fp = ', suffix: '("data", "r");', answer: 'fopen', hint: 'File open function.' },
+                { id: "h7", prefix: 'struct Player ', suffix: ' int hp; };', answer: '{', hint: 'Open the struct definition body.' }, 
+                { id: "h8", prefix: 'printf("%', suffix: '", string_ptr);', answer: 's', hint: 'Format specifier for a string.' }, 
+                { id: "h9", prefix: '*(ptr + 1) ', suffix: ' 5;', answer: '=', hint: 'Assignment operator.' }, 
+                { id: "h10", prefix: '', suffix: ' struct Node {', answer: 'typedef', hint: 'Used to create an alias for a data type.' },
+                { id: "h11", prefix: 'fclose(', suffix: ');', answer: 'fp', hint: 'Pass the file pointer to close it.' }, 
+                { id: "h12", prefix: 'enemy', suffix: 'hp -= 20; // struct', answer: '.', hint: 'Dot operator accesses struct members directly.' },
+                { id: "h13", prefix: 'int ', suffix: 'double_ptr = &ptr;', answer: '**', hint: 'A pointer to a pointer uses two asterisks.' }, 
+                { id: "h14", prefix: '', suffix: '(struct Player)', answer: 'sizeof', hint: 'Returns the byte size of a type.' },
+                { id: "h15", prefix: '', suffix: '(5, sizeof(int));', answer: 'calloc', hint: 'Allocates memory and zero-initializes it.' }, 
+                { id: "h16", prefix: '', suffix: '(ptr, 100);', answer: 'realloc', hint: 'Resizes previously allocated memory.' },
+                { id: "h17", prefix: 'char ', suffix: 'str = "Hello";', answer: '*', hint: 'A string is a pointer to a char array.' }, 
+                { id: "h18", prefix: 'fprintf(', suffix: ', "Log");', answer: 'fp', hint: 'Pass the file pointer as the first argument.' },
+                { id: "h19", prefix: 'int calc(int ', suffix: 'val)', answer: '*', hint: 'Pass by reference using a pointer.' }, 
+                { id: "h20", prefix: 'return ', suffix: 'x; // return address', answer: '&', hint: 'Use the address-of operator to return a pointer.' },
+                { id: "h21", prefix: 'int *p = (int*)', suffix: '(10 * sizeof(int));', answer: 'malloc', hint: 'Allocates uninitialized memory.' },
+                { id: "h22", prefix: '*(arr + 3) is equal to arr[', suffix: ']', answer: '3', hint: 'Pointer arithmetic maps to array indices.' },
+                { id: "h23", prefix: 'int x = 5 ', suffix: ' 1; // bitwise left shift', answer: '<<', hint: 'Shift bits to the left to multiply by 2.' },
+                { id: "h24", prefix: 'int y = 10 ', suffix: ' 1; // bitwise right shift', answer: '>>', hint: 'Shift bits to the right to divide by 2.' },
+                { id: "h25", prefix: 'int z = a ', suffix: ' b; // bitwise AND', answer: '&', hint: 'Ampersand evaluates bitwise AND.' },
+                { id: "h26", prefix: 'int z = a ', suffix: ' b; // bitwise OR', answer: '|', hint: 'Pipe evaluates bitwise OR.' },
+                { id: "h27", prefix: 'int z = a ', suffix: ' b; // bitwise XOR', answer: '^', hint: 'Caret evaluates bitwise XOR.' },
+                { id: "h28", prefix: 'int z = ', suffix: 'a; // bitwise NOT', answer: '~', hint: 'Tilde evaluates bitwise NOT.' },
+                { id: "h29", prefix: 'int max = (a > b) ', suffix: ' a : b; // ternary', answer: '?', hint: 'The ternary operator starts with a question mark.' },
+                { id: "h30", prefix: '#ifndef DEBUG\n#', suffix: ' DEBUG 1', answer: 'define', hint: 'Preprocessor directive to define a macro.' },
+                { id: "h31", prefix: 'FILE *f = fopen("log", "', suffix: '"); // append', answer: 'a', hint: 'Append mode is "a".' },
+                { id: "h32", prefix: 'if(ptr == ', suffix: ') return; // check null', answer: 'NULL', hint: 'Check if the pointer points to nothing.' },
+                { id: "h33", prefix: 'int *p = ', suffix: '; // point to array start', answer: 'arr', hint: 'An array name acts as a pointer to its first element.' },
+                { id: "h34", prefix: 'void func(int *p) { *p ', suffix: ' 1; } // add 1', answer: '+=', hint: 'Compound addition assignment.' },
+                { id: "h35", prefix: 'enum State { IDLE, RUN = ', suffix: ' }; // set to 5', answer: '5', hint: 'Assign integer 5 to the enum.' },
+                { id: "h36", prefix: 'int *p = calloc(5, ', suffix: '(int));', answer: 'sizeof', hint: 'Get the byte size of the integer type.' },
+                { id: "h37", prefix: 'char *str = ', suffix: '("Copy"); // dup string', answer: 'strdup', hint: 'Function to duplicate a string.' },
+                { id: "h38", prefix: 'fprintf(', suffix: ', "Error!"); // write to file', answer: 'fp', hint: 'Pass the file pointer variable.' },
+                { id: "h39", prefix: 'return ', suffix: 'x; // return memory address', answer: '&', hint: 'Address-of operator.' },
+                { id: "h40", prefix: 'void *ptr = realloc(p, ', suffix: ' * 2); // double size', answer: 'size', hint: 'Multiply the existing size variable.' }
             ]
         };
 
-        // UI Elements
-        const elDialogue = document.getElementById('dialogue');
-        const elCodeBox = document.getElementById('code-box');
-        const elInput = document.getElementById('spell-input');
-        const menuBox = document.getElementById('menu-box');
-        const elEnemyAvatar = document.getElementById('enemy');
-        const elPlayerAvatar = document.getElementById('player');
+        let usedQuestions = JSON.parse(localStorage.getItem('cbreak_spells_v3')) || [];
 
-        // --- CORE FUNCTIONS ---
+        const elDialogue = document.getElementById('dialogue'), elCodeBox = document.getElementById('code-box'), elInput = document.getElementById('spell-input'), menuBox = document.getElementById('menu-box'), elEnemyAvatar = document.getElementById('enemy'), elPlayerAvatar = document.getElementById('player');
+        const hintBtn = document.getElementById('hint-btn'), hintBox = document.getElementById('hint-box'), hintText = document.getElementById('hint-text');
+
+        function startModule() {
+            document.getElementById('boot-screen').style.display = 'none';
+            playSound('click');
+            initLevel();
+        }
 
         function initLevel() {
-            if (currentLevel >= levels.length) {
-                elDialogue.style.color = "var(--neon-green)";
-                elDialogue.innerText = "ALL THREATS ELIMINATED.\nYOU ARE A C-PROGRAMMING MASTER.\n\nSYSTEM SECURE.";
-                menuBox.style.display = 'none';
-                elEnemyAvatar.style.opacity = '0';
-                return;
-            }
+            if (currentLevel >= levels.length) return;
 
             const levelData = levels[currentLevel];
-            enemy.name = levelData.name;
-            enemy.maxHp = levelData.maxHp;
-            enemy.hp = levelData.maxHp;
+            enemy.name = levelData.name; enemy.maxHp = levelData.maxHp; enemy.hp = levelData.maxHp; enemy.enemyDmg = levelData.enemyDmg;
             
             document.getElementById('level-display').innerText = `LEVEL: ${currentLevel + 1}/3 - TARGET ACQUIRED`;
             document.getElementById('enemy-name').innerText = enemy.name;
-            elEnemyAvatar.innerText = levelData.avatar;
-            elEnemyAvatar.style.borderColor = levelData.color;
-            elEnemyAvatar.style.boxShadow = `0 0 20px ${levelData.color}, inset 0 0 20px ${levelData.color}`;
+            elEnemyAvatar.innerText = levelData.avatar; elEnemyAvatar.style.borderColor = levelData.color; elEnemyAvatar.style.boxShadow = `0 0 20px ${levelData.color}, inset 0 0 20px ${levelData.color}`;
             
-            // Heal player slightly between rounds
-            if(currentLevel > 0) {
-                player.hp = Math.min(player.maxHp, player.hp + 40);
-            }
-
+            if(currentLevel === 1) { player.maxHp = 150; player.hp = 150; } else if (currentLevel === 2) { player.maxHp = 200; player.hp = 200; }
+            
             updateHUD();
-            elDialogue.style.color = "var(--neon-blue)";
-            elDialogue.innerText = `A wild ${enemy.name} appeared! Select your attack.`;
             
-            menuBox.style.opacity = '1';
-            menuBox.style.pointerEvents = 'auto';
+            elDialogue.style.color = "var(--neon-blue)"; 
+            elDialogue.innerText = currentLevel > 0 ? `> LEVEL UP! Max HP increased to ${player.maxHp}.\n\nA wild ${enemy.name} appeared! Select your attack.` : `A wild ${enemy.name} appeared! Select your attack.`;
+            
+            menuBox.style.opacity = '1'; menuBox.style.pointerEvents = 'auto';
+            isExecuting = false; 
         }
 
         function updateHUD() {
             document.getElementById('player-hp-bar').style.width = Math.max(0, (player.hp / player.maxHp) * 100) + "%";
             document.getElementById('player-hp-num').innerText = `${Math.max(0, player.hp)}/${player.maxHp}`;
-            
             document.getElementById('enemy-hp-bar').style.width = Math.max(0, (enemy.hp / enemy.maxHp) * 100) + "%";
             document.getElementById('enemy-hp-num').innerText = `${Math.max(0, enemy.hp)}/${enemy.maxHp}`;
-
-            document.getElementById('player-hp-bar').style.background = player.hp < 30 ? "red" : "var(--neon-green)";
+            document.getElementById('player-hp-bar').style.background = player.hp <= (player.maxHp * 0.3) ? "red" : "var(--neon-green)";
         }
 
         function startAttack(difficulty) {
-            menuBox.style.opacity = '0.3';
-            menuBox.style.pointerEvents = 'none';
+            if(isExecuting) return;
+            playSound('click');
+            menuBox.style.opacity = '0.3'; menuBox.style.pointerEvents = 'none';
 
-            // Non-repeating question logic
-            let availableSpells = questionBank[difficulty].filter(spell => !spell.used);
-            
-            // If all questions in this tier have been used, reset the deck
-            if (availableSpells.length === 0) {
-                questionBank[difficulty].forEach(spell => spell.used = false);
-                availableSpells = questionBank[difficulty];
+            let availableSpells = questionBank[difficulty].filter(spell => !usedQuestions.includes(spell.id));
+            if (availableSpells.length === 0) { 
+                const tierIds = questionBank[difficulty].map(s => s.id);
+                usedQuestions = usedQuestions.filter(id => !tierIds.includes(id)); 
+                availableSpells = questionBank[difficulty]; 
             }
 
-            // Pick a random spell from the available ones
             currentSpell = availableSpells[Math.floor(Math.random() * availableSpells.length)];
-            currentSpell.used = true; // Mark as used
+            usedQuestions.push(currentSpell.id);
+            localStorage.setItem('cbreak_spells_v3', JSON.stringify(usedQuestions));
             
             if(difficulty === 'easy') currentSpell.damage = 20;
             if(difficulty === 'medium') currentSpell.damage = 30;
             if(difficulty === 'hard') currentSpell.damage = 40;
 
-            elDialogue.style.display = 'none';
-            elCodeBox.style.display = 'block';
-            document.getElementById('code-prefix').innerText = currentSpell.prefix;
-            document.getElementById('code-suffix').innerText = currentSpell.suffix;
-            elInput.value = '';
-            elInput.focus();
+            hintBox.style.display = 'none'; hintText.innerText = '';
+            elDialogue.style.display = 'none'; elCodeBox.style.display = 'block';
+            document.getElementById('code-prefix').innerText = currentSpell.prefix; document.getElementById('code-suffix').innerText = currentSpell.suffix;
+            elInput.value = ''; elInput.focus();
         }
 
-        function executeSpell() {
-            const userInput = elInput.value.replace(/\s+/g, '');
-            const correctAnswer = currentSpell.answer.replace(/\s+/g, '');
-            const altAnswer = currentSpell.altAnswer ? currentSpell.altAnswer.replace(/\s+/g, '') : null;
-
-            elCodeBox.style.display = 'none';
-            elDialogue.style.display = 'block';
-
-            if(userInput === correctAnswer || userInput === altAnswer) {
-                elDialogue.style.color = "var(--neon-green)";
-                elDialogue.innerText = "> SYNTAX CORRECT.\nEXECUTING SPELL...";
-                
-                setTimeout(() => {
-                    elPlayerAvatar.style.animation = "none";
-                    void elPlayerAvatar.offsetWidth;
-                    elPlayerAvatar.style.animation = "playerAttack 0.5s forwards";
-
-                    setTimeout(() => {
-                        enemy.hp -= currentSpell.damage;
-                        updateHUD();
-                        elEnemyAvatar.style.animation = "takeDamage 0.5s";
-                        showDamageNumber(currentSpell.damage, 'enemy', 'var(--neon-green)');
-                        
-                        elDialogue.innerText = `> SUCCESS!\nDealt ${currentSpell.damage} damage to ${enemy.name}.`;
-
-                        setTimeout(checkWinCondition, 1500);
-                    }, 250); 
-                }, 800);
-
-            } else {
-                elDialogue.style.color = "var(--neon-red)";
-                elDialogue.innerText = "> SYNTAX ERROR.\nATTACK FIZZLED.";
-                
-                setTimeout(() => {
-                    enemyTurn();
-                }, 1500);
+        function useHint() {
+            if (hintsRemaining > 0 && currentSpell && !isExecuting) {
+                hintsRemaining--; playSound('hint');
+                hintBtn.innerText = `[?] DECRYPT HINT (${hintsRemaining} LEFT)`;
+                hintText.innerText = `> ${currentSpell.hint}`;
+                hintBox.style.display = 'block'; hintBox.style.animation = 'none'; void hintBox.offsetWidth; hintBox.style.animation = 'slideDownFade 0.3s ease-out forwards';
+                if (hintsRemaining <= 0) { hintBtn.disabled = true; hintBtn.innerText = `[X] NO HINTS REMAINING`; }
+                elInput.focus();
             }
         }
 
-        function enemyTurn() {
-            elDialogue.style.color = "var(--neon-orange)";
-            elDialogue.innerText = `> ${enemy.name} is counter-attacking...`;
+        async function executeSpell() {
+            if (isExecuting || !currentSpell) return; 
+            isExecuting = true; 
             
-            setTimeout(() => {
-                elEnemyAvatar.style.animation = "none";
-                void elEnemyAvatar.offsetWidth;
-                elEnemyAvatar.style.animation = "enemyAttack 0.5s forwards";
+            const userInput = elInput.value.replace(/\s+/g, '');
+            const correctAnswer = currentSpell.answer.replace(/\s+/g, '');
+            const altAnswer = currentSpell.altAnswer ? currentSpell.altAnswer.replace(/\s+/g, '') : null;
+            
+            elCodeBox.style.display = 'none'; 
+            elDialogue.style.display = 'block';
 
-                setTimeout(() => {
-                    const dmg = 20; 
-                    player.hp -= dmg;
-                    updateHUD();
-                    elPlayerAvatar.style.animation = "takeDamage 0.5s";
-                    showDamageNumber(dmg, 'player', 'var(--neon-red)');
+            if(userInput === correctAnswer || userInput === altAnswer) {
+                elDialogue.style.color = "var(--neon-green)"; 
+                elDialogue.innerText = "> SYNTAX CORRECT.\nEXECUTING...";
+                
+                await sleep(800); 
+                
+                playSound('attack');
+                elPlayerAvatar.style.animation = "none"; void elPlayerAvatar.offsetWidth; 
+                elPlayerAvatar.style.animation = "playerAttack 0.6s forwards"; 
+                
+                await sleep(300); 
+                
+                playSound('hit');
+                enemy.hp -= currentSpell.damage; 
+                updateHUD();
+                elEnemyAvatar.style.animation = "takeDamage 0.6s"; 
+                showDamageNumber(currentSpell.damage, 'enemy', 'var(--neon-green)');
+                elDialogue.innerText = `> SUCCESS! Dealt ${currentSpell.damage} DMG.`;
+                
+                await sleep(1500); 
+                
+                if(enemy.hp <= 0) {
+                    elEnemyAvatar.style.opacity = '0';
                     
-                    elDialogue.style.color = "var(--neon-red)";
-                    elDialogue.innerText = `> CRITICAL ERROR!\nYou took ${dmg} damage!`;
-
-                    setTimeout(resetTurn, 1500);
-                }, 250);
-            }, 1000);
+                    if(currentLevel >= levels.length - 1) {
+                        playSound('victory');
+                        document.body.style.animation = 'none'; void document.body.offsetWidth;
+                        document.body.style.animation = 'flashScreen 0.8s ease-out';
+                        
+                        localStorage.setItem('cbreak_rpg_level', 'MAX');
+                        document.getElementById('end-screen').style.display = 'flex';
+                        document.getElementById('end-text').innerText = "SYSTEM SECURED";
+                        document.getElementById('end-text').style.color = "var(--neon-green)";
+                        document.getElementById('end-desc').innerText = "You have defeated the Data Titan.\nYour logic is flawless.";
+                        document.getElementById('retry-btn').style.display = 'none';
+                        document.getElementById('return-btn').style.display = 'inline-block';
+                    } else {
+                        playSound('levelup');
+                        elDialogue.style.color = "var(--neon-blue)"; 
+                        elDialogue.innerText = `> ${enemy.name} DELETED.\nPREPARING NEXT LEVEL...`;
+                        await sleep(2000); 
+                        currentLevel++; 
+                        elEnemyAvatar.style.opacity = '1'; 
+                        initLevel();
+                    }
+                } else {
+                    await executeEnemyTurn(); 
+                }
+            } else {
+                playSound('error');
+                elDialogue.style.color = "var(--neon-red)"; 
+                elDialogue.innerText = "> SYNTAX ERROR.\nATTACK FIZZLED.";
+                await sleep(1500);
+                await executeEnemyTurn();
+            }
         }
 
-        function checkWinCondition() {
-            if(enemy.hp <= 0) {
-                elDialogue.style.color = "var(--neon-blue)";
-                elDialogue.innerText = `> ${enemy.name} DELETED.\nPREPARING NEXT LEVEL...`;
-                elEnemyAvatar.style.opacity = '0';
-                
-                setTimeout(() => {
-                    currentLevel++;
-                    elEnemyAvatar.style.opacity = '1';
-                    initLevel();
-                }, 2500);
+        async function executeEnemyTurn() {
+            elDialogue.style.color = "var(--neon-orange)"; 
+            elDialogue.innerText = `> ${enemy.name} counter-attacks!`;
+            
+            await sleep(1200); 
+            
+            playSound('attack');
+            elEnemyAvatar.style.animation = "none"; void elEnemyAvatar.offsetWidth; 
+            elEnemyAvatar.style.animation = "enemyAttack 0.6s forwards";
+            
+            await sleep(300); 
+            
+            playSound('hit');
+            const dmg = enemy.enemyDmg;
+            player.hp -= dmg; 
+            updateHUD();
+            elPlayerAvatar.style.animation = "takeDamage 0.6s"; 
+            showDamageNumber(dmg, 'player', 'var(--neon-red)');
+            elDialogue.style.color = "var(--neon-red)"; 
+            elDialogue.innerText = `> SYSTEM BREACH!\nYou took ${dmg} DMG!`;
+            
+            await sleep(1500); 
+            
+            if(player.hp <= 0) {
+                playSound('error');
+                document.getElementById('end-screen').style.display = 'flex';
+                document.getElementById('end-desc').innerText = `You were deleted by the ${enemy.name}.\nReboot to try again.`;
+                isExecuting = false; 
             } else {
-                enemyTurn();
+                resetTurn();
             }
         }
 
         function resetTurn() {
-            if(player.hp <= 0) {
-                elDialogue.style.color = "var(--neon-red)";
-                elDialogue.innerText = "> FATAL ERROR. SYSTEM CRASHED.\nGAME OVER.";
-                elPlayerAvatar.style.opacity = '0';
-                return; 
-            }
-
-            menuBox.style.opacity = '1';
-            menuBox.style.pointerEvents = 'auto';
-            elDialogue.style.color = "var(--neon-blue)";
-            elDialogue.innerText = "Awaiting your next command...";
-            
-            elPlayerAvatar.style.animation = "float 2.5s infinite ease-in-out";
-            elEnemyAvatar.style.animation = "float 2s infinite ease-in-out reverse";
+            menuBox.style.opacity = '1'; menuBox.style.pointerEvents = 'auto';
+            elDialogue.style.color = "var(--neon-blue)"; elDialogue.innerText = "Awaiting your next command...";
+            elPlayerAvatar.style.animation = "float 2.5s infinite ease-in-out"; elEnemyAvatar.style.animation = "float 2s infinite ease-in-out reverse";
+            isExecuting = false; 
         }
 
         function showDamageNumber(amount, targetId, color) {
-            const target = document.getElementById(targetId).parentElement;
-            const floatDmg = document.createElement('div');
-            floatDmg.className = 'floating-damage';
-            floatDmg.style.color = color;
-            floatDmg.innerText = "-" + amount;
-            target.appendChild(floatDmg);
-            setTimeout(() => { floatDmg.remove(); }, 1000);
+            const target = document.getElementById(targetId).parentElement, floatDmg = document.createElement('div');
+            floatDmg.className = 'floating-damage'; floatDmg.style.color = color; floatDmg.innerText = "-" + amount;
+            target.appendChild(floatDmg); setTimeout(() => floatDmg.remove(), 1000);
         }
 
-        elInput.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                executeSpell();
-            }
-        });
+        function resetGame() {
+            currentLevel = 0; player = { hp: 100, maxHp: 100 }; hintsRemaining = 3;
+            hintBtn.disabled = false; hintBtn.innerText = `[?] DECRYPT HINT (3 LEFT)`;
+            isExecuting = false;
+        }
 
-        initLevel();
+        elInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); executeSpell(); } });
     </script>
 </body>
 </html>

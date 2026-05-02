@@ -3,530 +3,437 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber-Defender: Bitwise Assault</title>
+    <title>Core Defender | C-BREAK OS</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Fira+Code:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&display=swap');
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #050510;
-            overflow: hidden;
-            font-family: 'Fira Code', monospace;
-            color: #fff;
+        :root {
+            --bg: #050510;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-red: #ff3333;
+            --grid-color: rgba(255, 0, 234, 0.15); 
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+        body, html { margin: 0; padding: 0; background-color: var(--bg); color: #fff; font-family: 'Fira Code', monospace; height: 100vh; overflow: hidden; user-select: none; }
 
-        /* --- HUD --- */
-        #hud {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 10;
-        }
+        .scanlines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; opacity: 0.3;}
 
-        .hud-box {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #00ffff;
-            padding: 15px 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            text-shadow: 0 0 5px #00ffff;
-            color: #00ffff;
-        }
+        .cyber-grid { position: absolute; bottom: 0; left: -50%; width: 200%; height: 60vh; background-image: linear-gradient(var(--grid-color) 2px, transparent 2px), linear-gradient(90deg, var(--grid-color) 2px, transparent 2px); background-size: 40px 40px; transform: perspective(300px) rotateX(70deg); animation: gridMove 2s linear infinite; border-top: 2px solid var(--neon-pink); box-shadow: 0 -10px 30px rgba(255,0,234,0.3); z-index: 0; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
 
-        #health { color: #ff0055; border-color: #ff0055; text-shadow: 0 0 5px #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
+        /* FIXED: Increased z-index from 100 to 1000 so it sits above the HUD! */
+        .top-nav { position: absolute; top: 15px; left: 20px; z-index: 1000; }
+        .return-link { color: #888; text-decoration: none; font-family: 'Press Start 2P', cursive; font-size: 0.6em; transition: color 0.2s;}
+        .return-link:hover { color: var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
 
-        /* --- CONTROL CONSOLE --- */
-        #console-wrapper {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            background: rgba(10, 15, 30, 0.85);
-            border: 2px solid #ff00ff;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
-            backdrop-filter: blur(10px);
-            z-index: 10;
-            transition: transform 0.1s;
-        }
+        .hud { position: absolute; top: 20px; width: 100%; display: flex; justify-content: space-around; font-family: 'Press Start 2P', cursive; font-size: 1em; text-shadow: 0 0 10px rgba(255,255,255,0.5); z-index: 100;}
+        .score-box { color: var(--neon-cyan); }
+        .hp-box { color: var(--neon-green); }
+        .mode-display { color: #aaa; font-size: 0.8em; }
 
-        .error-shake {
-            animation: shake 0.3s forwards;
-            border-color: #ff0000 !important;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6) !important;
-        }
+        #game-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; z-index: 10; }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(-50%); }
-            25% { transform: translateX(calc(-50% - 10px)); }
-            75% { transform: translateX(calc(-50% + 10px)); }
-        }
+        .virus { position: absolute; background: rgba(0,0,0,0.9); border: 2px solid; padding: 12px 15px; font-size: 0.9em; font-weight: bold; border-radius: 8px; text-align: center; box-shadow: inset 0 0 10px, 0 0 15px; transform: translateX(-50%); transition: top 0.1s linear; max-width: 250px; word-wrap: break-word; line-height: 1.4;}
+        .virus-red { border-color: var(--neon-red); color: #fff; box-shadow: inset 0 0 10px var(--neon-red), 0 0 15px var(--neon-red); }
+        .virus-green { border-color: var(--neon-green); color: var(--neon-green); box-shadow: inset 0 0 10px var(--neon-green), 0 0 15px var(--neon-green); border-style: dashed; }
 
-        #question-display {
-            font-size: 1.3rem;
-            color: #00ffcc;
-            margin-bottom: 15px;
-            white-space: pre-wrap;
-            border-left: 4px solid #00ffcc;
-            padding-left: 15px;
-            line-height: 1.5;
-        }
+        .core-container { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 100; width: 500px;}
+        .core { width: 100%; height: 20px; background: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); border-radius: 10px; margin-bottom: 15px; transition: width 0.2s, background-color 0.2s;}
+        .input-box { background: rgba(0,0,0,0.8); border: 2px solid var(--neon-pink); padding: 15px; border-radius: 8px; display: flex; align-items: center; box-shadow: 0 0 20px rgba(255,0,234,0.4); width: 100%; box-sizing: border-box;}
+        .prompt { color: var(--neon-pink); font-family: 'Press Start 2P', cursive; font-size: 0.6em; margin-right: 15px; }
+        
+        input[type="text"] { background: transparent; border: none; color: #fff; font-family: 'Fira Code', monospace; font-size: 1.5em; outline: none; width: 250px; text-align: left; border-bottom: 2px solid #555;}
+        input[type="text"]:focus { border-bottom-color: var(--neon-cyan); }
 
-        .input-row {
-            display: flex;
-            align-items: center;
-            background: #000;
-            border: 1px solid #555;
-            border-radius: 6px;
-            padding: 10px;
-        }
+        .laser { position: absolute; width: 4px; background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); left: 50%; transform: translateX(-50%); z-index: 50; }
+        @keyframes shootLaser { 0% { bottom: 100px; height: 0; opacity: 1;} 50% { height: 100vh; opacity: 1;} 100% { bottom: 100vh; height: 0; opacity: 0;} }
+        
+        .explosion { position: absolute; font-size: 3em; transform: translate(-50%, -50%); animation: explodeOut 0.4s forwards; z-index: 60; pointer-events: none;}
+        @keyframes explodeOut { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2); } }
 
-        .prompt { color: #ff00ff; margin-right: 15px; font-weight: bold; }
+        @keyframes flashDamage { 0% { background-color: rgba(255,0,0,0.3); } 100% { background-color: transparent; } }
+        @keyframes flashHeal { 0% { background-color: rgba(0,255,102,0.2); } 100% { background-color: transparent; } }
+        @keyframes flashVictory { 0% { background-color: #fff; } 100% { background-color: var(--bg); } }
 
-        #answer-input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-family: 'Fira Code', monospace;
-            font-size: 1.5rem;
-            width: 100%;
-            outline: none;
-        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+        .overlay h1 { font-family: 'Press Start 2P', cursive; font-size: 2em; color: var(--neon-red); text-align: center;}
+        .overlay p { font-family: 'Press Start 2P', cursive; font-size: 0.8em; color: #fff; text-align: center; line-height: 1.5; margin-bottom: 30px;}
+        .overlay button, .overlay a { background: transparent; margin-top: 20px; text-decoration: none; font-family: 'Press Start 2P', cursive; font-size: 0.8em; border: 1px solid; padding: 15px; cursor: pointer; transition: all 0.3s;}
+        
+        .btn-cyan { color: var(--neon-cyan); border-color: var(--neon-cyan); }
+        .btn-cyan:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); }
+        
+        .btn-pink { color: var(--neon-pink); border-color: var(--neon-pink); }
+        .btn-pink:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink); }
 
-        #answer-input:focus { border-bottom: 2px solid #ff00ff; }
+        .overlay-box { max-width: 650px; padding: 30px; border: 2px dashed #555; background: rgba(0,0,0,0.8); border-radius: 10px; box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); margin-bottom: 20px;}
+        .overlay-box h2 { font-family: 'Press Start 2P', cursive; font-size: 1.2em; color: #fff; text-align: center; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px;}
+        .overlay-box p { color: #ccc; line-height: 1.6; font-size: 1em; font-family: 'Fira Code', monospace; text-align: left;}
+        .overlay-box strong { color: #fff; }
 
-        /* --- OVERLAYS --- */
-        .screen-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .screen-overlay h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 4rem;
-            color: #ff0055;
-            text-shadow: 0 0 20px #ff0055;
-            margin-bottom: 10px;
-        }
-
-        .screen-overlay p { font-size: 1.5rem; color: #aaa; margin-bottom: 40px; }
-
-        button.start-btn {
-            background: transparent;
-            border: 3px solid #00ffff;
-            color: #00ffff;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            padding: 15px 40px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        button.start-btn:hover {
-            background: #00ffff;
-            color: #000;
-            box-shadow: 0 0 30px #00ffff;
-        }
-
-        #damage-glitch {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.3);
-            pointer-events: none;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 0.1s;
-        }
+        .mode-container { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        
     </style>
 </head>
 <body>
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
 
-    <div id="hud">
-        <div class="hud-box" id="score">SCORE: 0</div>
-        <div class="hud-box" id="health">CORE HP: 100%</div>
+    <div class="top-nav"><a href="index.html" class="return-link">< RETURN TO OS</a></div>
+
+    <div class="hud">
+        <div class="score-box">SCORE: <span id="score">0</span></div>
+        <div class="mode-display" id="mode-display">MODE: STANDBY</div>
+        <div class="hp-box">CORE HP: <span id="hp">100</span>%</div>
     </div>
 
-    <div id="damage-glitch"></div>
-
-    <div id="console-wrapper">
-        <div id="question-display">Loading logic matrix...</div>
-        <div class="input-row">
-            <span class="prompt">root@turret:~#</span>
-            <input type="text" id="answer-input" autocomplete="off" placeholder="Type output...">
+    <div class="overlay" id="start-screen" style="display: flex;">
+        <div class="overlay-box">
+            <h2>MODULE: CORE DEFENDER</h2>
+            <p><strong>> OBJECTIVE:</strong> Defend the system core from falling data-viruses by evaluating C-based logic.</p>
+            <p><strong>> COMBAT STATS:</strong><br>
+            <span style="color: var(--neon-cyan);">Shoot Red Virus = +10 Points</span><br>
+            <span style="color: var(--neon-green);">Let Green Virus hit core = +25% HP Heal</span><br>
+            <span style="color: var(--neon-red);">Red Virus Hits Core = -10 DMG</span></p>
+            <p style="border-top: 1px solid #333; padding-top: 15px; margin-top: 15px;"><strong>> SELECT YOUR PAYLOAD:</strong><br>
+            <span style="color: var(--neon-cyan);">[SYNTAX MODE]</span> Answer C programming trivia and syntax keywords.<br>
+            <span style="color: var(--neon-pink);">[BITWISE MODE]</span> Calculate real-time bitwise math operations.</p>
+        </div>
+        <div class="mode-container">
+            <button class="btn-cyan" onclick="startGame('syntax')">INITIATE SYNTAX MODE</button>
+            <button class="btn-pink" onclick="startGame('bitwise')">INITIATE BITWISE MODE</button>
         </div>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
+    <div id="game-area"></div>
 
-    <div class="screen-overlay" id="start-screen">
-        <h1 id="screen-title">BITWISE ASSAULT</h1>
-        <p id="screen-desc">Evaluate the C code. Type the exact output. Defend the Core.</p>
-        <button class="start-btn" onclick="startGame()">INITIALIZE DEFENSE</button>
+    <div class="core-container">
+        <div class="core" id="core-bar"></div>
+        <div class="input-box">
+            <span class="prompt">> TARGET VAL:</span>
+            <input type="text" id="answer-input" autocomplete="off" autofocus>
+        </div>
+    </div>
+
+    <div class="overlay" id="end-screen">
+        <h1 id="end-title" style="color: var(--neon-red);">CORE BREACHED</h1>
+        <p id="end-desc">System compromised.</p>
+        <div style="display: flex;">
+            <button class="btn-cyan" onclick="showStartScreen()">REBOOT SYSTEM</button>
+            <a href="index.html" class="btn-pink" style="margin-left: 10px;">OS HUB</a>
+        </div>
     </div>
 
     <script>
-        // --- GAME ENGINE (CANVAS) ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+        let audioCtx = null;
+        
+        function playSound(type) {
+            try {
+                if (!window.AudioContext && !window.webkitAudioContext) return;
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') { audioCtx.resume().catch(() => {}); if (audioCtx.state === 'suspended') return; }
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+                
+                if (type === 'laser') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); } 
+                else if (type === 'hit') { osc.type = 'square'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.2); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); } 
+                else if (type === 'damage') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(50, now + 0.4); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4); osc.start(now); osc.stop(now + 0.4); } 
+                else if (type === 'error') { osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); } 
+                else if (type === 'heal') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.linearRampToValueAtTime(800, now + 0.3); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+                else if (type === 'victory') {
+                    const freqs = [440, 554.37, 659.25, 880]; 
+                    freqs.forEach((freq, i) => {
+                        const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                        vOsc.type = 'square'; vOsc.frequency.value = freq;
+                        vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                        vGain.gain.setValueAtTime(0, now + i * 0.15);
+                        vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05);
+                        vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                        vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                    });
+                }
+            } catch (error) {}
         }
-        window.addEventListener('resize', resize);
-        resize();
 
-        // High-Level C Questions (Bitwise, Pointers, Arrays)
-        const qBank = [
-            { q: "printf(\"%d\", 5 ^ 3);", a: "6" }, // 101 ^ 011 = 110 (6)
-            { q: "printf(\"%d\", 1 << 4);", a: "16" }, // 1 * 2^4
-            { q: "int a=10; a &= 3;\nprintf(\"%d\", a);", a: "2" }, // 1010 & 0011 = 0010 (2)
-            { q: "printf(\"%d\", 100 >> 2);", a: "25" }, // 100 / 4
-            { q: "int x = ~0;\nprintf(\"%d\", x);", a: "-1" }, // All bits 1 is -1 in two's complement
-            { q: "char s[] = \"C\";\nprintf(\"%zu\", sizeof(s));", a: "2" }, // Includes null terminator
-            { q: "int a[] = {1,2,3};\nprintf(\"%d\", *(a+2));", a: "3" }, // Pointer math
-            { q: "printf(\"%d\", 7 | 2);", a: "7" }, // 111 | 010 = 111
-            { q: "int x=5, y=5;\nprintf(\"%d\", ++x == y++);", a: "0" }, // 6 == 5 is false (0)
-            { q: "int a=2, b=3;\na^=b; b^=a; a^=b;\nprintf(\"%d\", a);", a: "3" } // XOR Swap
-        ];
-
-        // Game State Variables
         let isPlaying = false;
         let score = 0;
-        let hp = 100;
+        let coreHp = 100;
         let enemies = [];
-        let particles = [];
-        let lasers = [];
-        let currentQ = null;
-        let spawnRate = 2000; // ms
+        let spawnRate = 3500; 
         let lastSpawn = 0;
-        let gridOffset = 0;
+        let animationId;
+        let hasWon = false;
+        let gameMode = 'syntax'; // default
 
-        const elScore = document.getElementById('score');
-        const elHealth = document.getElementById('health');
-        const elQuestion = document.getElementById('question-display');
         const elInput = document.getElementById('answer-input');
-        const elConsole = document.getElementById('console-wrapper');
-        const elGlitch = document.getElementById('damage-glitch');
-        const startScreen = document.getElementById('start-screen');
+        const gameArea = document.getElementById('game-area');
+        const elScore = document.getElementById('score');
+        const elHp = document.getElementById('hp');
+        const elCoreBar = document.getElementById('core-bar');
+        const elModeDisplay = document.getElementById('mode-display');
 
-        // --- GRAPHICS: Synthwave 3D Grid ---
-        function drawGrid() {
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-            ctx.lineWidth = 2;
-            const vpX = width / 2; // Vanishing point X
-            const vpY = height * 0.3; // Vanishing point Y
+        const questionBank = [
+            { text: "Format specifier for integer?", answer: "%d" },
+            { text: "Format specifier for float?", answer: "%f" },
+            { text: "Format specifier for character?", answer: "%c" },
+            { text: "Format specifier for string?", answer: "%s" },
+            { text: "Symbol for 'Address of'?", answer: "&" },
+            { text: "Symbol for pointer dereference?", answer: "*" },
+            { text: "Header file for printf/scanf?", answer: "stdio.h" },
+            { text: "Keyword to return a value?", answer: "return" },
+            { text: "Keyword to exit a loop instantly?", answer: "break" },
+            { text: "Keyword to skip loop iteration?", answer: "continue" },
+            { text: "Operator for Logical AND?", answer: "&&" },
+            { text: "Operator for Logical OR?", answer: "||" },
+            { text: "Operator for Equality?", answer: "==" },
+            { text: "Operator for Not Equal?", answer: "!=" },
+            { text: "First index of an array?", answer: "0" },
+            { text: "Function to dynamically allocate memory?", answer: "malloc" },
+            { text: "Function to free allocated memory?", answer: "free" },
+            { text: "Symbol to terminate a statement?", answer: ";" },
+            { text: "Size of char in bytes?", answer: "1" },
+            { text: "Keyword for custom data structure?", answer: "struct" },
+            { text: "Function to print to console?", answer: "printf" },
+            { text: "Function to read from console?", answer: "scanf" },
+            { text: "Keyword for an empty return type?", answer: "void" }
+        ];
 
-            // Vertical lines converging
-            for (let i = -10; i <= 10; i++) {
-                ctx.beginPath();
-                ctx.moveTo(vpX, vpY);
-                ctx.lineTo(vpX + i * 200, height);
-                ctx.stroke();
-            }
-
-            // Horizontal lines (simulating Z movement)
-            gridOffset += 2;
-            if (gridOffset > 40) gridOffset = 0;
-
-            for (let i = 0; i < 20; i++) {
-                let yPos = vpY + Math.pow(i, 2.2) + gridOffset * (i * 0.1);
-                if (yPos > height) continue;
-                ctx.beginPath();
-                ctx.moveTo(0, yPos);
-                ctx.lineTo(width, yPos);
-                ctx.stroke();
-            }
-        }
-
-        // --- ENTITIES ---
-        class Enemy {
-            constructor() {
-                this.lane = (Math.random() - 0.5) * 2; // -1 to 1
-                this.z = 0; // Starts at horizon (vpY)
-                this.speed = 0.001 + (score * 0.0001); // Speeds up as score increases
-                this.color = '#ff0055';
-            }
-            update() {
-                this.z += this.speed;
-                if (this.z >= 1) return true; // Reached player
-                return false;
-            }
-            draw() {
-                const vpX = width / 2;
-                const vpY = height * 0.3;
-                // Map Z to Y coordinate and Scale
-                const y = vpY + (height - vpY) * Math.pow(this.z, 2);
-                const x = vpX + (this.lane * width * 0.8 * this.z);
-                const size = 5 + (50 * this.z);
-
-                ctx.save();
-                ctx.translate(x, y);
-                // Rotate based on z
-                ctx.rotate(this.z * Math.PI * 4);
-                
-                // Draw glowing diamond
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = this.color;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.moveTo(0, -size);
-                ctx.lineTo(size, 0);
-                ctx.lineTo(0, size);
-                ctx.lineTo(-size, 0);
-                ctx.closePath();
-                ctx.fill();
-                
-                // Inner white core
-                ctx.fillStyle = '#fff';
-                ctx.shadowBlur = 0;
-                ctx.beginPath();
-                ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.restore();
-            }
-        }
-
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y;
-                this.vx = (Math.random() - 0.5) * 15;
-                this.vy = (Math.random() - 0.5) * 15;
-                this.life = 1.0;
-                this.color = color;
-                this.size = Math.random() * 5 + 2;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life -= 0.03;
-            }
-            draw() {
-                ctx.globalAlpha = Math.max(0, this.life);
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        class Laser {
-            constructor(targetX, targetY) {
-                this.startX = width / 2;
-                this.startY = height;
-                this.endX = targetX;
-                this.endY = targetY;
-                this.life = 10; // Frames to display
-            }
-            draw() {
-                if(this.life <= 0) return;
-                ctx.strokeStyle = '#00ffff';
-                ctx.lineWidth = 10;
-                ctx.shadowBlur = 30;
-                ctx.shadowColor = '#00ffff';
-                ctx.beginPath();
-                ctx.moveTo(this.startX, this.startY);
-                ctx.lineTo(this.endX, this.endY);
-                ctx.stroke();
-                
-                // Inner white core
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 4;
-                ctx.shadowBlur = 0;
-                ctx.stroke();
-                this.life--;
-            }
-        }
-
-        // --- GAME LOGIC ---
-        function loadQuestion() {
-            currentQ = qBank[Math.floor(Math.random() * qBank.length)];
-            elQuestion.innerText = currentQ.q;
-            elInput.value = '';
-        }
-
-        function checkAnswer() {
-            if(!isPlaying) return;
-            const ans = elInput.value.trim();
-            
-            if(ans === currentQ.a) {
-                // Correct! Destroy closest enemy
-                if(enemies.length > 0) {
-                    // Find enemy with largest Z
-                    let target = enemies.reduce((prev, current) => (prev.z > current.z) ? prev : current);
-                    
-                    // Calculate Screen XY for effects
-                    const vpX = width / 2;
-                    const vpY = height * 0.3;
-                    const eY = vpY + (height - vpY) * Math.pow(target.z, 2);
-                    const eX = vpX + (target.lane * width * 0.8 * target.z);
-                    
-                    // Fire Laser & Explode
-                    lasers.push(new Laser(eX, eY));
-                    for(let i=0; i<30; i++) particles.push(new Particle(eX, eY, target.color));
-                    
-                    // Remove Enemy
-                    enemies = enemies.filter(e => e !== target);
-                    
-                    score += 10;
-                    elScore.innerText = `SCORE: ${score}`;
-                    elConsole.style.borderColor = "#00ffcc";
-                    elConsole.style.boxShadow = "0 0 30px rgba(0, 255, 204, 0.5)";
-                }
-                loadQuestion();
+        function generateExpression() {
+            if (gameMode === 'syntax') {
+                return questionBank[Math.floor(Math.random() * questionBank.length)];
             } else {
-                // Wrong Answer!
-                elConsole.classList.remove('error-shake');
-                void elConsole.offsetWidth; // Trigger reflow
-                elConsole.classList.add('error-shake');
-                elInput.value = '';
-            }
-            
-            // Revert console border color
-            setTimeout(() => {
-                elConsole.style.borderColor = "#ff00ff";
-                elConsole.style.boxShadow = "0 0 30px rgba(255, 0, 255, 0.3)";
-            }, 300);
-        }
-
-        function takeDamage() {
-            hp -= 20;
-            elHealth.innerText = `CORE HP: ${hp}%`;
-            
-            // Glitch Effect
-            elGlitch.style.opacity = 1;
-            setTimeout(() => { elGlitch.style.opacity = 0; }, 150);
-            
-            // Screen Shake
-            canvas.style.transform = `translate(${(Math.random()-0.5)*20}px, ${(Math.random()-0.5)*20}px)`;
-            setTimeout(() => { canvas.style.transform = `translate(0,0)`; }, 100);
-
-            if(hp <= 0) {
-                isPlaying = false;
-                startScreen.style.display = 'flex';
-                document.getElementById('screen-title').innerText = "CORE DESTROYED";
-                document.getElementById('screen-desc').innerText = `Final Score: ${score}. System Overrun.`;
-                document.querySelector('.start-btn').innerText = "REBOOT SYSTEM";
+                const ops = ['&', '|', '^', '<<', '>>'];
+                const op = ops[Math.floor(Math.random() * ops.length)];
+                let a, b, ans;
+                
+                if(op === '<<' || op === '>>') {
+                    a = Math.floor(Math.random() * 16) + 1; 
+                    b = Math.floor(Math.random() * 3) + 1;  
+                    ans = op === '<<' ? (a << b) : (a >> b);
+                } else {
+                    a = Math.floor(Math.random() * 15);
+                    b = Math.floor(Math.random() * 15);
+                    ans = op === '&' ? (a & b) : op === '|' ? (a | b) : (a ^ b);
+                }
+                return { text: `${a} ${op} ${b}`, answer: ans.toString() };
             }
         }
 
-        function startGame() {
-            score = 0;
-            hp = 100;
-            enemies = [];
-            particles = [];
-            lasers = [];
-            spawnRate = 2500;
-            isPlaying = true;
+        function spawnEnemy() {
+            const data = generateExpression();
+            const el = document.createElement('div');
+            const isHealer = Math.random() < 0.15; 
             
-            elScore.innerText = `SCORE: 0`;
-            elHealth.innerText = `CORE HP: 100%`;
-            startScreen.style.display = 'none';
+            el.className = `virus ${isHealer ? 'virus-green' : 'virus-red'}`;
+            el.innerText = data.text;
             
-            loadQuestion();
-            elInput.focus();
-            lastSpawn = performance.now();
-            requestAnimationFrame(gameLoop);
+            const startX = 15 + Math.random() * 70;
+            el.style.left = `${startX}%`;
+            el.style.top = '-100px'; 
+            
+            gameArea.appendChild(el);
+            
+            let baseSpeed = gameMode === 'bitwise' ? 0.6 : 0.5;
+            let speedMult = gameMode === 'bitwise' ? 0.005 : 0.003;
+            let finalSpeed = isHealer ? (baseSpeed - 0.1) : (baseSpeed + Math.random() * 0.4 + (score * speedMult));
+
+            enemies.push({
+                el: el,
+                answer: data.answer.toLowerCase(), 
+                y: -100,
+                speed: finalSpeed, 
+                isHealer: isHealer
+            });
         }
 
-        // Keep input focused so user doesn't have to click
-        window.addEventListener('click', () => { if(isPlaying) elInput.focus(); });
-        elInput.addEventListener('blur', () => { if(isPlaying) setTimeout(()=> elInput.focus(), 10); });
-
-        // Handle Enter key
-        elInput.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') checkAnswer();
-        });
-
-        // --- MAIN RENDER LOOP ---
         function gameLoop(timestamp) {
             if(!isPlaying) return;
 
-            // Motion blur effect using semi-transparent black
-            ctx.fillStyle = 'rgba(5, 5, 16, 0.3)';
-            ctx.fillRect(0, 0, width, height);
-
-            drawGrid();
-
-            // Spawn Enemies
-            if (timestamp - lastSpawn > spawnRate) {
-                enemies.push(new Enemy());
+            if(timestamp - lastSpawn > spawnRate) {
+                spawnEnemy();
                 lastSpawn = timestamp;
-                // Increase difficulty
-                spawnRate = Math.max(800, spawnRate - 50); 
+                let minSpawn = gameMode === 'bitwise' ? 1000 : 1500;
+                if(spawnRate > minSpawn) spawnRate -= 15; 
             }
 
-            // Update & Draw Enemies
-            for (let i = enemies.length - 1; i >= 0; i--) {
+            const screenHeight = window.innerHeight;
+            const coreThreshold = screenHeight - 120; 
+
+            for(let i = enemies.length - 1; i >= 0; i--) {
                 let e = enemies[i];
-                if (e.update()) {
-                    // Enemy hit the player
+                e.y += e.speed;
+                e.el.style.top = `${e.y}px`;
+
+                if(e.y > coreThreshold) {
+                    e.el.remove();
                     enemies.splice(i, 1);
-                    takeDamage();
-                } else {
-                    e.draw();
+                    
+                    if(e.isHealer) {
+                        playSound('heal');
+                        coreHp = Math.min(100, coreHp + 25);
+                        document.body.style.animation = 'none'; void document.body.offsetWidth;
+                        document.body.style.animation = 'flashHeal 0.5s ease-out';
+                    } else {
+                        playSound('damage');
+                        coreHp -= 10;
+                        document.body.style.animation = 'none'; void document.body.offsetWidth;
+                        document.body.style.animation = 'flashDamage 0.5s ease-out';
+                    }
+                    updateHUD();
                 }
             }
 
-            // Draw Lasers
-            lasers.forEach((l, index) => {
-                l.draw();
-                if(l.life <= 0) lasers.splice(index, 1);
-            });
+            if(coreHp <= 0) {
+                endGame(false);
+            } else {
+                animationId = requestAnimationFrame(gameLoop);
+            }
+        }
 
-            // Update & Draw Particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                let p = particles[i];
-                p.update();
-                p.draw();
-                if (p.life <= 0) particles.splice(i, 1);
+        async function fireLaser() {
+            if(!isPlaying) return;
+            
+            const val = elInput.value.trim().toLowerCase();
+            elInput.value = '';
+            if(val === '') return;
+
+            let targetIdx = -1;
+            let lowestY = -100;
+            
+            for(let i=0; i<enemies.length; i++) {
+                if(enemies[i].answer === val && enemies[i].y > lowestY) {
+                    targetIdx = i;
+                    lowestY = enemies[i].y;
+                }
             }
 
-            // Draw Turret (Bottom Center)
-            ctx.fillStyle = '#ff00ff';
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#ff00ff';
-            ctx.beginPath();
-            ctx.arc(width/2, height, 40, 0, Math.PI, true);
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            if(targetIdx > -1) {
+                const target = enemies[targetIdx];
+                
+                const laser = document.createElement('div');
+                laser.className = 'laser';
+                laser.style.left = target.el.style.left;
+                laser.style.animation = 'shootLaser 0.2s forwards';
+                gameArea.appendChild(laser);
+                playSound('laser');
 
-            requestAnimationFrame(gameLoop);
+                enemies.splice(targetIdx, 1);
+
+                await sleep(100); 
+                
+                playSound('hit');
+                const boom = document.createElement('div');
+                boom.className = 'explosion';
+                boom.innerText = '💥';
+                boom.style.left = target.el.style.left;
+                boom.style.top = `${target.y}px`;
+                gameArea.appendChild(boom);
+                
+                target.el.remove();
+                setTimeout(() => { laser.remove(); boom.remove(); }, 300);
+
+                if(!target.isHealer) {
+                    score += 10;
+                    checkVictory();
+                } else {
+                    playSound('error');
+                    score = Math.max(0, score - 5);
+                }
+                
+                updateHUD();
+            } else {
+                playSound('error');
+            }
         }
-        
-        // Initial Draw to prevent black screen
-        ctx.fillStyle = '#050510';
-        ctx.fillRect(0,0,width,height);
+
+        function updateHUD() {
+            elScore.innerText = score;
+            elHp.innerText = coreHp;
+            elCoreBar.style.width = `${Math.max(0, coreHp)}%`;
+            elCoreBar.style.backgroundColor = coreHp < 30 ? 'var(--neon-red)' : 'var(--neon-cyan)';
+        }
+
+        function checkVictory() {
+            if(score >= 200 && !hasWon) {
+                hasWon = true;
+                playSound('victory');
+                
+                let savedScore = parseInt(localStorage.getItem('cbreak_arcade_score')) || 0;
+                if(score > savedScore) localStorage.setItem('cbreak_arcade_score', score);
+
+                document.body.style.animation = 'none'; void document.body.offsetWidth;
+                document.body.style.animation = 'flashVictory 1s ease-out';
+                
+                setTimeout(() => { endGame(true); }, 1500); 
+            }
+        }
+
+        function showStartScreen() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
+
+        function startGame(selectedMode) {
+            gameMode = selectedMode;
+            elModeDisplay.innerText = `MODE: ${gameMode.toUpperCase()}`;
+            elModeDisplay.style.color = gameMode === 'syntax' ? 'var(--neon-cyan)' : 'var(--neon-pink)';
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'none';
+            playSound('click');
+            
+            gameArea.innerHTML = '';
+            enemies = [];
+            score = 0;
+            coreHp = 100;
+            spawnRate = gameMode === 'syntax' ? 3500 : 3000; 
+            hasWon = false;
+            isPlaying = true;
+            updateHUD();
+            elInput.focus();
+            
+            try { if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); } catch(e){}
+
+            lastSpawn = performance.now();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(victory) {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            let savedScore = parseInt(localStorage.getItem('cbreak_arcade_score')) || 0;
+            if(score > savedScore) localStorage.setItem('cbreak_arcade_score', score);
+
+            const endScreen = document.getElementById('end-screen');
+            const endTitle = document.getElementById('end-title');
+            const endDesc = document.getElementById('end-desc');
+
+            if(victory) {
+                endTitle.innerText = "KERNEL MASTER";
+                endTitle.style.color = "var(--neon-cyan)";
+                endDesc.innerText = `Final Score: ${score}\nYou have secured the mainframe.`;
+            } else {
+                endTitle.innerText = "CORE BREACHED";
+                endTitle.style.color = "var(--neon-red)";
+                endDesc.innerText = `Final Score: ${score}\nThe system was corrupted.`;
+            }
+
+            endScreen.style.display = 'flex';
+        }
+
+        elInput.addEventListener("keydown", async (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                await fireLaser();
+            }
+        });
+
+        document.addEventListener('click', () => { if(isPlaying) elInput.focus(); });
     </script>
 </body>
 </html>
