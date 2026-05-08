@@ -20,9 +20,28 @@
             font-family: 'Share Tech Mono', monospace; overflow-x: hidden; scroll-behavior: smooth;
         }
 
+        /* --- THE ULTIMATE FIX: FADE TO BLACK MASK --- */
+        .ambient-bg, .cyber-grid, .scanlines {
+            -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+        }
+
+        /* --- AMBIENT NEON ORBS --- */
+        .ambient-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 1.5s ease-in; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.5; animation: floatOrb 20s infinite alternate ease-in-out; }
+        .orb-cyan { width: 50vw; height: 50vw; background: var(--neon-cyan); top: -10vh; left: -10vw; }
+        .orb-pink { width: 60vw; height: 60vw; background: var(--neon-pink); bottom: -20vh; right: -10vw; animation-delay: -5s; }
+        .orb-green { width: 40vw; height: 40vw; background: var(--neon-green); top: 40vh; left: 30vw; animation-delay: -10s; opacity: 0.3; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10vw, 10vh) scale(1.2); }
+        }
+
         /* --- CRT SCANLINES --- */
         .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; opacity: 0.4; }
 
+        /* --- CYBER GRID --- */
         .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
         @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
 
@@ -35,41 +54,69 @@
         #main-os-content { opacity: 0; transition: opacity 1.5s ease-in; display: none; }
 
         /* --- NAVIGATION --- */
-        nav { position: fixed; top: 0; width: 100%; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--neon-cyan); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 243, 255, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);}
         .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); font-weight: 900;}
-        .nav-links a { color: #fff; text-decoration: none; margin-left: 30px; transition: color 0.3s; }
+        .nav-links a { color: #fff; text-decoration: none; margin-left: 30px; transition: color 0.3s; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; }
         .nav-links a:hover { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
 
         /* --- HERO --- */
         header { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative;}
-        .hero-title { font-family: 'Orbitron'; font-size: 5rem; margin: 0; background: linear-gradient(to right, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; color: transparent; letter-spacing: 5px; }
-        .hero-subtitle { font-size: 1.5rem; color: #aaa; margin-top: 10px; max-width: 600px; }
+        .hero-title { font-family: 'Orbitron'; font-size: 5rem; margin: 0; background: linear-gradient(to right, #fff, var(--neon-cyan)); -webkit-background-clip: text; color: transparent; letter-spacing: 5px; filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4));}
+        .hero-subtitle { font-size: 1.5rem; color: #ddd; margin-top: 10px; max-width: 600px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);}
 
         .scroll-down { position: absolute; bottom: 50px; color: var(--neon-cyan); font-size: 2.5rem; animation: bounce 2s infinite; text-decoration: none; text-shadow: 0 0 10px var(--neon-cyan); }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-20px); } 60% { transform: translateY(-10px); } }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 100px 20px; }
-        .section-title { font-family: 'Orbitron'; color: var(--neon-cyan); font-size: 2.5rem; border-bottom: 2px solid var(--neon-pink); padding-bottom: 10px; margin-bottom: 40px; display: inline-block; }
+        /* --- FIX FOR ANCHOR LINKS HIDING UNDER NAVBAR --- */
+        #about, #modules { scroll-margin-top: 100px; }
 
+        .container { max-width: 1200px; margin: 0 auto; padding: 100px 20px; }
+        .section-title { font-family: 'Orbitron'; color: #fff; text-shadow: 0 0 10px var(--neon-cyan); font-size: 2.5rem; border-bottom: 2px solid var(--neon-pink); padding-bottom: 10px; margin-bottom: 40px; display: inline-block; }
+
+        /* --- ULTIMATE GLASS PANEL EFFECT --- */
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.3);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05); 
+            border-radius: 12px; 
+        }
+        
         /* --- TERMINAL --- */
-        .glass-panel { background: rgba(15, 20, 30, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); border-radius: 10px; }
-        .terminal-box { border-left: 5px solid var(--neon-green); padding: 30px; margin-bottom: 50px; font-size: 1.2rem; line-height: 1.6; min-height: 250px; position: relative; }
+        .terminal-box { padding: 30px; margin-bottom: 50px; font-size: 1.2rem; line-height: 1.6; min-height: 250px; position: relative; border-left: 5px solid var(--neon-green) !important; }
         .terminal-header { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot.red { background: #ff5f56; } .dot.yellow { background: #ffbd2e; } .dot.green { background: #27c93f; }
-        .prompt-text { color: var(--neon-green); margin-right: 10px; }
-        .code-comment { color: #555; }
+        .dot.red { background: #ff5f56; box-shadow: 0 0 5px #ff5f56;} 
+        .dot.yellow { background: #ffbd2e; box-shadow: 0 0 5px #ffbd2e;} 
+        .dot.green { background: #27c93f; box-shadow: 0 0 5px #27c93f;}
+        .prompt-text { color: var(--neon-green); margin-right: 10px; text-shadow: 0 0 5px var(--neon-green); }
+        .code-comment { color: #888; }
         .terminal-link { color: var(--neon-cyan); text-decoration: none; border-bottom: 1px dashed var(--neon-cyan); }
         .typewriter-inner { padding-left: 20px; border-left: 2px solid rgba(255,255,255,0.1); margin: 15px 0; }
 
+        /* --- TERMINAL SOCIAL MODULES --- */
+        .terminal-socials { display: flex; gap: 15px; margin-top: 25px; padding-left: 20px; flex-wrap: wrap; opacity: 0; transition: opacity 1s ease-in; }
+        .term-btn { 
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px; 
+            background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.4); 
+            color: var(--neon-cyan); font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700;
+            text-decoration: none; border-radius: 4px; transition: all 0.3s ease; text-transform: uppercase;
+        }
+        .term-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .term-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); transform: translateY(-2px); }
+
         /* --- CARDS & BADGES --- */
         .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
-        .game-card { padding: 30px; position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .game-card { padding: 30px; position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
         .game-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
-        .game-card:hover { transform: translateY(-10px); }
+        .game-card:hover { transform: translateY(-10px); background: rgba(30, 35, 50, 0.4); }
         .game-card:hover::before { transform: scaleX(1); }
-        .card-tag { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.5); color: #fff; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-weight: bold; }
-        .card-title { font-family: 'Orbitron'; font-size: 1.5rem; margin: 20px 0 15px 0; }
+        
+        .card-tag { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.6); color: #fff; padding: 5px 10px; font-size: 0.7rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-weight: bold; }
+        .card-title { font-family: 'Orbitron'; font-size: 1.5rem; margin: 20px 0 15px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
         .game-card:hover .card-title { animation: textGlitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; }
         
         @keyframes textGlitch {
@@ -81,16 +128,28 @@
             100% { transform: translate(0); text-shadow: none; }
         }
 
-        .play-btn { display: inline-block; background: transparent; padding: 12px 20px; text-align: center; text-decoration: none; font-family: 'Orbitron'; border-radius: 5px; transition: all 0.3s; border: 1px solid; cursor: pointer; }
+        .play-btn { display: inline-block; background: rgba(0,0,0,0.3); padding: 12px 20px; text-align: center; text-decoration: none; font-family: 'Orbitron'; border-radius: 5px; transition: all 0.3s; border: 1px solid; cursor: pointer; }
         .card-assembler .play-btn { border-color: var(--neon-cyan); color: var(--neon-cyan); }
         .card-rpg .play-btn { border-color: var(--neon-green); color: var(--neon-green); }
         .card-arcade .play-btn { border-color: var(--neon-pink); color: var(--neon-pink); }
-        .play-btn:hover { background: #fff; color: #000; }
+        
+        .card-assembler .play-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
+        .card-rpg .play-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
+        .card-arcade .play-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 20px var(--neon-pink); }
 
-        .achievements-board { padding: 20px; margin-bottom: 100px; display: flex; gap: 20px; border-left: 5px solid var(--neon-pink); flex-wrap: wrap; }
-        .badge { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 5px; color: #777; font-family: 'Orbitron'; position: relative; cursor: pointer; }
-        .badge.unlocked { border-color: var(--neon-green); color: var(--neon-green); }
-        .badge.unlocked-master { border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); }
+        .card-assembler:hover { border-color: var(--neon-cyan); box-shadow: 0 10px 40px rgba(0, 243, 255, 0.2); }
+        .card-assembler:hover::before { background: var(--neon-cyan); }
+        .card-rpg:hover { border-color: var(--neon-green); box-shadow: 0 10px 40px rgba(0, 255, 102, 0.2); }
+        .card-rpg:hover::before { background: var(--neon-green); }
+        .card-arcade:hover { border-color: var(--neon-pink); box-shadow: 0 10px 40px rgba(255, 0, 234, 0.2); }
+        .card-arcade:hover::before { background: var(--neon-pink); }
+
+        .achievements-board { padding: 20px; margin-bottom: 100px; display: flex; gap: 20px; border-left: 5px solid var(--neon-pink) !important; flex-wrap: wrap; }
+        .badge { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 5px; color: #777; font-family: 'Orbitron'; position: relative; cursor: pointer; transition: 0.3s;}
+        .badge:hover { background: rgba(255,255,255,0.1); }
+        .badge.unlocked { border-color: var(--neon-green); color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); box-shadow: inset 0 0 10px rgba(0,255,102,0.1);}
+        .badge.unlocked-master { border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
+        
         .badge::after {
             content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.95); border: 1px dashed var(--neon-pink); color: var(--neon-pink); 
@@ -102,10 +161,53 @@
         .blink { animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        footer { text-align: center; padding: 50px; color: #666; border-top: 1px solid rgba(255,255,255,0.05); }
+        /* --- CLEAN FOOTER --- */
+        footer { 
+            text-align: center; 
+            padding: 50px 20px 30px 20px; 
+            background: #050508; 
+            border-top: 1px solid rgba(0, 243, 255, 0.2); 
+            color: #888; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 25px; 
+            position: relative; 
+            z-index: 10;
+        }
+
+        .footer-socials { display: flex; gap: 20px; }
+        .footer-socials a { 
+            display: flex; justify-content: center; align-items: center; 
+            width: 45px; height: 45px; 
+            border: 2px solid var(--neon-cyan); border-radius: 50%; 
+            color: var(--neon-cyan); transition: all 0.3s ease; 
+        }
+        .footer-socials a svg { width: 20px; height: 20px; fill: currentColor; }
+        .footer-socials a:hover { 
+            background: var(--neon-cyan); color: #000; 
+            box-shadow: 0 0 15px var(--neon-cyan); transform: translateY(-5px); 
+        }
+
+        .footer-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+        .footer-links a { 
+            color: #ccc; text-decoration: none; 
+            font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; 
+            transition: color 0.3s ease; cursor: pointer;
+        }
+        .footer-links a:hover { color: var(--neon-pink); text-shadow: 0 0 8px var(--neon-pink); }
+
+        .footer-copyright { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #666; margin-top: 10px; }
+
     </style>
 </head>
 <body onclick="initAudio()">
+
+    <div class="ambient-bg" id="ambient-bg">
+        <div class="orb orb-cyan"></div>
+        <div class="orb orb-pink"></div>
+        <div class="orb orb-green"></div>
+    </div>
 
     <div class="scanlines"></div>
     <div class="cyber-grid"></div>
@@ -117,18 +219,22 @@
     <div id="main-os-content">
         <nav>
             <div class="nav-logo">C-BREAK OS</div>
-            <div class="nav-links"><a href="#about">ABOUT</a><a href="#modules">TRAINING MODULES</a></div>
+            <div class="nav-links">
+                <a href="#about">ABOUT</a>
+                <a href="#modules">TRAINING MODULES</a>
+            </div>
         </nav>
 
         <header>
             <h1 class="hero-title">LEARN C BY SURVIVING IT</h1>
             <p class="hero-subtitle">The ultimate gamified environment for syntax mastery.</p>
-            <a href="#about" class="scroll-down">↓</a>
+            <a href="#modules" class="scroll-down">↓</a>
         </header>
 
-        <div class="container" id="about">
-            <div>
+        <div class="container">
+            <div id="about">
                 <h2 class="section-title">WHOAMI</h2>
+                
                 <div class="glass-panel terminal-box">
                     <div class="terminal-header">
                         <div class="dot red"></div>
@@ -141,9 +247,29 @@
                     <div id="typewriter-text" class="typewriter-inner"></div>
                     <br>
                     <div id="final-prompt" style="display:none"><span class="prompt-text">admin@server:~$</span> <span class="blink">_</span></div>
+                    
+                    <div id="terminal-socials" class="terminal-socials">
+                        <a href="https://github.com/sagnic05" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
+                            <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            GitHub
+                        </a>
+                        <a href="https://www.linkedin.com/in/sagnic-bhattacharyya-a40ab42a0/" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
+                            <svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            LinkedIn
+                        </a>
+                        <a href="https://www.instagram.com/sagnic__xd__/" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            Instagram
+                        </a>
+                        <a href="https://x.com/SagnicBhai05" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
+                            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            X (Twitter)
+                        </a>
+                    </div>
                 </div>
 
-                <h3 style="color: var(--neon-pink); font-family: 'Orbitron';">USER TELEMETRY</h3>
+                <h3 style="color: #fff; text-shadow: 0 0 8px var(--neon-pink); font-family: 'Orbitron';">USER TELEMETRY</h3>
+                
                 <div class="glass-panel achievements-board">
                     <div class="badge" id="badge-assembler" onclick="handleBadgeClick(this)">🔒 Assembler Cleared</div>
                     <div class="badge" id="badge-rpg" onclick="handleBadgeClick(this)">🔒 RPG Cleared</div>
@@ -155,28 +281,58 @@
             <div id="modules">
                 <h2 class="section-title">ACTIVE MODULES</h2>
                 <div class="games-grid">
+                    
                     <div class="glass-panel game-card card-assembler" onmouseenter="playHoverSound()">
                         <div class="card-tag">LEVEL 1-10</div>
                         <h3 class="card-title">Syntax Assembler</h3>
                         <p class="card-desc">Repair fragmented C scripts by dragging blocks. Build muscle memory without typing.</p>
                         <a href="assembler.html" class="play-btn">INITIATE TRAINING</a>
                     </div>
+
                     <div class="glass-panel game-card card-rpg" onmouseenter="playHoverSound()">
                         <div class="card-tag">TACTICAL COMBAT</div>
                         <h3 class="card-title">Kernel Panic: C-RPG</h3>
                         <p class="card-desc">Turn-based logic combat. Face off against Syntax Bugs and the Data Titan boss.</p>
                         <a href="rpg.html" class="play-btn">ENTER ARENA</a>
                     </div>
+
                     <div class="glass-panel game-card card-arcade" onmouseenter="playHoverSound()">
                         <div class="card-tag">SURVIVAL MODE</div>
                         <h3 class="card-title">Bitwise Assault V3</h3>
                         <p class="card-desc">Defend the core in 3D survival mode. Evaluate logic in real-time.</p>
                         <a href="arcade.html" class="play-btn">DEFEND THE CORE</a>
                     </div>
+
                 </div>
             </div>
         </div>
-        <footer><p>C-BREAK OS v3.2 | Developed by Sagnic Bhattacharyya</p></footer>
+        
+        <footer>
+            <div class="footer-socials">
+                <a href="https://github.com/sagnic05" target="_blank" title="GitHub" onmouseenter="playHoverSound()">
+                    <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+                <a href="https://www.linkedin.com/in/sagnic-bhattacharyya-a40ab42a0/" target="_blank" title="LinkedIn" onmouseenter="playHoverSound()">
+                    <svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+                <a href="https://www.instagram.com/sagnic__xd__/" target="_blank" title="Instagram" onmouseenter="playHoverSound()">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+                <a href="https://x.com/SagnicBhai05" target="_blank" title="X (Twitter)" onmouseenter="playHoverSound()">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+            </div>
+            
+            <div class="footer-links">
+                <a href="#about">About OS</a>
+                <a href="#modules">Training Modules</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=bhattacharyya.sagnic@gmail.com" target="_blank">Contact Developer</a>
+            </div>
+
+            <div class="footer-copyright">
+                &copy; 2026 Sagnic Bhattacharyya | All Rights Reserved
+            </div>
+        </footer>
     </div>
 
     <script>
@@ -195,7 +351,7 @@
 
         function playHoverSound() { playSound('hover'); }
 
-        const bootLines = ["Initializing Kernel...", "Checking memory... [OK]", "Establishing secure uplink...", "Loading UI Styles... [RESTORED]", "Ready."];
+        const bootLines = ["Initializing Kernel...", "Checking memory... [OK]", "Establishing secure uplink...", "Loading Glass UI Overrides...", "Ready."];
 
         async function startBootSequence() {
             const term = document.getElementById('boot-terminal');
@@ -204,18 +360,25 @@
                 line.className = 'boot-line';
                 line.innerText = `> ${lineText}`;
                 term.appendChild(line);
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 300));
             }
             document.getElementById('boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('boot-screen').style.display = 'none';
                 const main = document.getElementById('main-os-content');
+                const ambient = document.getElementById('ambient-bg');
                 main.style.display = 'block';
-                setTimeout(() => { main.style.opacity = '1'; typeWriter(); }, 100);
+                
+                // Sync the fade in of the ambient orbs with the main content
+                setTimeout(() => { 
+                    main.style.opacity = '1'; 
+                    ambient.style.opacity = '1';
+                    typeWriter(); 
+                }, 100);
             }, 800);
         }
 
-        const textToType = `Developer Name: Sagnic Bhattacharyya\nEmail: <a href="mailto:bhattacharyya.sagnic@gmail.com" class="terminal-link">bhattacharyya.sagnic@gmail.com</a>\nMission: To eliminate the boredom of traditional coding tutorials.\n\nI built the C-BREAK OS to turn coding concepts into real gameplay mechanics. Here, you don't just read about loops and pointers—you use them to fight off syntax bugs and defend system cores.`;
+        const textToType = `User_ID: Sagnic Bhattacharyya\nClearance: B.Tech Computer Science Engineer\nUplink: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=bhattacharyya.sagnic@gmail.com" target="_blank" class="terminal-link">bhattacharyya.sagnic@gmail.com</a>\nDirective: Redefine technical education through interactive software design.\n\nSystem Context: C-BREAK OS is a simulated training environment engineered to eliminate passive learning. Abstract C programming syntax is weaponized into tangible survival mechanics. Operators must deploy logic, manipulate memory pointers, and compile code under pressure to sanitize system bugs and defend the core architecture.`;
         
         let charIdx = 0;
         let isTag = false;
@@ -232,6 +395,11 @@
                 setTimeout(typeWriter, isTag ? 0 : 30);
             } else { 
                 document.getElementById('final-prompt').style.display = 'block'; 
+                // Fade in the terminal socials after text finishes!
+                setTimeout(() => {
+                    document.getElementById('terminal-socials').style.opacity = '1';
+                    playSound('success'); // Play a satisfying chime when modules load
+                }, 400);
             }
         }
 
@@ -270,18 +438,17 @@
                 bMst.setAttribute('data-tooltip', 'LEGENDARY: System God.');
             }
 
-            // SESSION STORAGE FIX: Bypass boot screen if already booted this session
             if(sessionStorage.getItem('cbreak_booted') === 'true') {
                 document.getElementById('boot-screen').style.display = 'none';
                 const main = document.getElementById('main-os-content');
+                const ambient = document.getElementById('ambient-bg');
                 main.style.display = 'block';
                 main.style.opacity = '1';
-                
-                // Instantly render terminal text
+                ambient.style.opacity = '1';
                 document.getElementById('typewriter-text').innerHTML = textToType.replace(/\n/g, '<br>');
                 document.getElementById('final-prompt').style.display = 'block';
+                document.getElementById('terminal-socials').style.opacity = '1'; // Show instantly if bypassed
             } else {
-                // First time loading the tab
                 sessionStorage.setItem('cbreak_booted', 'true');
                 startBootSequence();
             }
