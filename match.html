@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Syntax Match V3.1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-red: #ff3333;
+            --neon-yellow: #ffbb00;
+            --grid-color: rgba(0, 243, 255, 0.05);
+            --current-glow: #00f3ff;
+        }
+
+        body, html {
+            margin: 0; padding: 0; background-color: var(--bg-base); color: #fff;
+            font-family: 'Share Tech Mono', monospace; overflow-x: hidden; user-select: none;
+        }
+
+        /* --- CRT & GRID EFFECTS --- */
+        .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; opacity: 0.4; }
+        .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 243, 255, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--current-glow); text-shadow: 0 0 10px var(--current-glow); font-weight: 900; transition: color 0.5s, text-shadow 0.5s; }
+        .return-btn { color: #fff; text-decoration: none; border: 1px solid var(--neon-pink); padding: 5px 15px; border-radius: 4px; transition: 0.3s; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; }
+        .return-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink); }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1050px; margin: 100px auto 40px; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 25px; 
+        }
+
+        /* --- PRE-GAME BRIEFING OVERLAY --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(25px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .intro-box {
+            max-width: 650px; text-align: center; border-color: var(--neon-cyan);
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
+        }
+
+        /* --- TELEMETRY SIDEBAR --- */
+        .telemetry-box { display: flex; flex-direction: column; gap: 20px; height: fit-content; }
+        .module-title { font-family: 'Orbitron'; color: var(--current-glow); font-size: 1.4rem; margin: 0; text-shadow: 0 0 8px var(--current-glow); transition: color 0.5s; }
+        .status-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .status-val { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: bold; }
+        
+        /* Combo Meter */
+        .combo-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-yellow); padding: 10px 15px; border-radius: 6px; box-shadow: inset 0 0 10px rgba(255,187,0,0.1); }
+        .combo-title { font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon-yellow); margin-bottom: 3px; font-weight: bold; }
+        .combo-val { font-family: 'Orbitron'; font-size: 1.6rem; color: var(--neon-yellow); font-weight: 900; text-shadow: 0 0 8px var(--neon-yellow); }
+
+        .reset-btn { 
+            background: rgba(0, 0, 0, 0.5); border: 1px solid var(--current-glow); color: var(--current-glow); 
+            padding: 12px; font-family: 'Orbitron'; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px;
+        }
+        .reset-btn:hover { background: var(--current-glow); color: #000; box-shadow: 0 0 15px var(--current-glow); }
+
+        /* --- MATCHING WORKSPACE --- */
+        .grid-workspace { display: flex; flex-direction: column; }
+        .grid-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .level-badge { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--current-glow); color: var(--current-glow); padding: 4px 10px; border-radius: 4px; font-family: 'Orbitron'; font-size: 0.85rem; font-weight: bold; box-shadow: 0 0 8px rgba(0,0,0,0.5); transition: all 0.5s; }
+
+        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; perspective: 1000px; }
+        
+        .card { 
+            aspect-ratio: 1.2; width: 100%; position: relative; cursor: pointer; 
+            transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); 
+        }
+
+        /* Stacking Fix: Elevate Interactive & Flipped Cards */
+        .card:hover { z-index: 5; }
+        .card.flipped, .card.matched { transform: rotateY(180deg); z-index: 10; }
+        
+        /* Anchor Fix: Explicitly anchor both faces to prevent multi-row downward overlap */
+        .card-face { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-sizing: border-box; 
+            padding: 10px; 
+            text-align: center; 
+            font-size: 1.05rem;
+            border: 1px solid; 
+            overflow: hidden;
+        }
+
+        /* Animated Trace Lines on Card Hover */
+        .card-front { 
+            background: rgba(10, 15, 25, 0.8); border-color: rgba(255, 255, 255, 0.2); 
+            color: var(--current-glow); font-family: 'Orbitron'; font-weight: bold; font-size: 1.5rem;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05); transition: all 0.3s; position: relative;
+        }
+        .card-front::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg); transition: 0.5s; opacity: 0;
+        }
+        .card:hover .card-front { border-color: var(--current-glow); box-shadow: 0 0 15px var(--current-glow); transform: translateY(-3px); }
+        .card:hover .card-front::after { opacity: 1; transform: rotate(45deg) translateY(100%); }
+
+        .card-back { 
+            background: rgba(20, 30, 50, 0.9); border-color: var(--neon-pink); 
+            color: #fff; font-family: 'Share Tech Mono', monospace; transform: rotateY(180deg);
+            box-shadow: 0 0 15px rgba(255,0,234,0.2); padding: 5px;
+        }
+
+        .card.matched .card-back {
+            border-color: var(--neon-green); background: rgba(0, 255, 102, 0.1);
+            color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,102,0.3); font-weight: bold;
+        }
+
+        /* Live Decryption Log */
+        .decryption-log { background: #000; border: 1px solid #333; border-left: 3px solid var(--current-glow); padding: 12px 15px; margin-top: 20px; border-radius: 4px; height: 65px; overflow-y: auto; font-size: 0.85rem; display: flex; flex-direction: column; gap: 4px; transition: border-color 0.5s; }
+        .log-line { margin: 0; }
+        .log-sys { color: #888; }
+        .log-err { color: var(--neon-red); }
+        .log-succ { color: var(--neon-green); font-family: 'Orbitron'; font-weight: bold; }
+
+        /* Safe Exit Button */
+        .abort-btn { 
+            background: rgba(255, 51, 51, 0.1); 
+            border: 1px solid var(--neon-red); 
+            color: var(--neon-red); 
+            padding: 12px 25px; 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            display: block; 
+            width: 100%; 
+            text-align: center; 
+            text-decoration: none; 
+            box-sizing: border-box; 
+            margin-top: 25px; 
+        }
+        .abort-btn:hover { 
+            background: var(--neon-red); 
+            color: #000; 
+            box-shadow: 0 0 20px var(--neon-red); 
+        }
+
+        @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <a href="index.html" class="return-btn">ABORT MODULE</a>
+    </nav>
+
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="glass-panel intro-box">
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-cyan); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-cyan);">SYNTAX MATCH v3.1</h1>
+            <div class="level-badge" style="display: inline-block; margin-bottom: 20px; border-color: var(--neon-cyan); color: var(--neon-cyan);">OPERATOR BRIEFING</div>
+            
+            <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
+                Welcome to the secure memory buffer. Abstract C programming concepts have been scrambled into cryptographic grid blocks. Your directive is to locate and decrypt all matching runtime pairs in the fewest moves possible.
+            </p>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-pink); margin-bottom: 25px;">
+                <div style="color: var(--neon-pink); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">MISSION PARAMETERS:</div>
+                <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.95rem; line-height: 1.8;">
+                    <li><strong style="color: #fff;">Match Pairs:</strong> Flip blocks to pair C syntax (e.g., <code style="color: var(--neon-cyan);">printf()</code>) with its correct definition.</li>
+                    <li><strong style="color: #fff;">Build Combos:</strong> Consecutive matches supercharge your score multiplier.</li>
+                    <li><strong style="color: #fff;">5 Security Layers:</strong> Clearing a board automatically pulls fresh variables and injects the next difficulty tier.</li>
+                    <li><strong style="color: #fff;">Penalties:</strong> Mismatches reset your combo multiplier to zero and drain operational points.</li>
+                </ul>
+            </div>
+
+            <button class="abort-btn" style="background: rgba(0, 243, 255, 0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE TRAINING DECK</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="glass-panel telemetry-box">
+            <h2 class="module-title">SYNTAX DECRYPT</h2>
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0;">Secure Memory Match Array.</p>
+            
+            <hr style="width: 100%; border-color: rgba(255,255,255,0.1); margin: 0;">
+
+            <div class="combo-box">
+                <div class="combo-title">COMBO MULTIPLIER</div>
+                <div class="combo-val" id="combo-val">1.0x</div>
+            </div>
+
+            <div>
+                <div class="status-label">MOVES COMMITTED</div>
+                <div class="status-val" id="moves-val" style="color: var(--current-glow);">0</div>
+            </div>
+
+            <div>
+                <div class="status-label">PAIRS DECRYPTED</div>
+                <div class="status-val" id="pairs-val" style="color: var(--neon-pink);">0 / 8</div>
+            </div>
+
+            <div>
+                <div class="status-label">OPERATIONS SCORE</div>
+                <div class="status-val" id="score-val" style="color: var(--neon-green);">0</div>
+            </div>
+
+            <button class="reset-btn" onclick="bootCurrentLevel()" onmouseenter="playSound('hover')">FLUSH & SHUFFLE</button>
+        </div>
+
+        <div class="glass-panel grid-workspace">
+            <div class="grid-header">
+                <div>
+                    <div style="color: var(--current-glow); font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold; transition: color 0.5s;">SECURE DECK: <span id="deck-title">LAYER 1</span></div>
+                    <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Pair syntax logic with exact runtime targets.</div>
+                </div>
+                <div class="level-badge" id="level-badge">TIER 1 / 5</div>
+            </div>
+
+            <div class="card-grid" id="card-grid">
+                </div>
+
+            <div class="decryption-log" id="decryption-log">
+                <div class="log-line log-sys">> Uplink established. Memory blocks anchored perfectly.</div>
+                <div class="log-line log-sys">> Injecting decryption hooks into visual array...</div>
+            </div>
+
+            <a href="index.html" class="abort-btn" onmouseenter="playSound('hover')">TERMINATE UPLINK & RETURN TO HUB</a>
+        </div>
+
+    </div>
+
+    <script>
+        // --- NATIVE AUDIO ENGINE ---
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playSound(type) {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'hover') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'flip') { osc.type = 'triangle'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.08); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.08); osc.start(now); osc.stop(now + 0.08); }
+            else if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.exponentialRampToValueAtTime(880, now + 0.2); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+            else if (type === 'level') { osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.5); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+            else if (type === 'victory') { 
+                const freqs = [440, 554.37, 659.25, 880];
+                freqs.forEach((freq, i) => {
+                    const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                    vOsc.type = 'square'; vOsc.frequency.value = freq;
+                    vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                    vGain.gain.setValueAtTime(0, now + i * 0.15); vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05); vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                    vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                });
+            }
+        }
+
+        // --- MASSIVE 100-PAIR DATABASE (5 PROGRESSIVE TIERS) ---
+        const levelBanks = {
+            1: [ // LAYER 1: Core Syntax & Types (20 Pairs)
+                { id: 101, a: "printf()", b: "Prints output stream" },
+                { id: 102, a: "scanf()", b: "Reads input input" },
+                { id: 103, a: "%d", b: "Integer specifier" },
+                { id: 104, a: "%f", b: "Float specifier" },
+                { id: 105, a: "\\n", b: "Newline character" },
+                { id: 106, a: "//", b: "Single-line comment" },
+                { id: 107, a: "int", b: "Whole number type" },
+                { id: 108, a: "char", b: "Single byte character" },
+                { id: 109, a: "#include", b: "Header import directive" },
+                { id: 110, a: "return 0;", b: "Successful termination" },
+                { id: 111, a: "void", b: "Empty data type" },
+                { id: 112, a: "const", b: "Read-only variable" },
+                { id: 113, a: "main()", b: "Primary execution frame" },
+                { id: 114, a: "%c", b: "Character specifier" },
+                { id: 115, a: "double", b: "High-precision float" },
+                { id: 116, a: "/* ... */", b: "Multi-line comment block" },
+                { id: 117, a: "stdio.h", b: "Standard I/O library" },
+                { id: 118, a: "\\t", b: "Horizontal tab escape" },
+                { id: 119, a: "unsigned", b: "Non-negative modifier" },
+                { id: 120, a: "short", b: "Half-width integer" }
+            ],
+            2: [ // LAYER 2: Operators & Flow Control (20 Pairs)
+                { id: 201, a: "&&", b: "Logical AND operator" },
+                { id: 202, a: "||", b: "Logical OR operator" },
+                { id: 203, a: "!=", b: "Inequality comparator" },
+                { id: 204, a: "==", b: "Equality comparator" },
+                { id: 205, a: "i++", b: "Post-increment by 1" },
+                { id: 206, a: "break;", b: "Force loop exit" },
+                { id: 207, a: "continue;", b: "Skip current iteration" },
+                { id: 208, a: "if()", b: "Conditional evaluation" },
+                { id: 209, a: "while()", b: "Condition-first loop" },
+                { id: 210, a: "do...while", b: "Execute-first loop" },
+                { id: 211, a: "%", b: "Modulo remainder" },
+                { id: 212, a: "sizeof()", b: "Memory byte counter" },
+                { id: 213, a: "switch()", b: "Multi-case router" },
+                { id: 214, a: "case:", b: "Individual match branch" },
+                { id: 215, a: "default:", b: "Fallback routing branch" },
+                { id: 216, a: "? :", b: "Ternary operator" },
+                { id: 217, a: "+=", b: "Compound addition" },
+                { id: 218, a: "--", b: "Decrement operator" },
+                { id: 219, a: "for()", b: "Definite range loop" },
+                { id: 220, a: "!", b: "Logical NOT negation" }
+            ],
+            3: [ // LAYER 3: Pointers, Arrays & Memory (20 Pairs)
+                { id: 301, a: "&var", b: "Extracts memory address" },
+                { id: 302, a: "*ptr", b: "Dereferences value" },
+                { id: 303, a: "malloc()", b: "Allocates raw heap" },
+                { id: 304, a: "free()", b: "Sanitizes allocated RAM" },
+                { id: 305, a: "NULL", b: "Empty null pointer" },
+                { id: 306, a: "arr[0]", b: "Base array element" },
+                { id: 307, a: "calloc()", b: "Allocates and zeroes" },
+                { id: 308, a: "realloc()", b: "Resizes active block" },
+                { id: 309, a: "ptr++", b: "Shifts pointer offset" },
+                { id: 310, a: "int *p", b: "Integer pointer declaration" },
+                { id: 311, a: "void *", b: "Generic memory pointer" },
+                { id: 312, a: "**ptr", b: "Pointer to a pointer" },
+                { id: 313, a: "stdlib.h", b: "Memory allocation library" },
+                { id: 314, a: "arr + i", b: "Pointer arithmetic offset" },
+                { id: 315, a: "string\\0", b: "Null terminator byte" },
+                { id: 316, a: "segmentation fault", b: "Illegal memory read" },
+                { id: 317, a: "memory leak", b: "Unfreed active pointers" },
+                { id: 318, a: "stack memory", b: "Automated local frames" },
+                { id: 319, a: "heap memory", b: "Manually managed space" },
+                { id: 320, a: "dangling pointer", b: "Points to freed location" }
+            ],
+            4: [ // LAYER 4: Structs, Unions & File I/O (20 Pairs)
+                { id: 401, a: "struct", b: "Custom compound data" },
+                { id: 402, a: "union", b: "Shared memory block" },
+                { id: 403, a: "ptr->id", b: "Struct pointer access" },
+                { id: 404, a: "obj.name", b: "Direct member access" },
+                { id: 405, a: "typedef", b: "Establishes type alias" },
+                { id: 406, a: "FILE *", b: "File stream handle" },
+                { id: 407, a: "fopen()", b: "Opens external stream" },
+                { id: 408, a: "fclose()", b: "Commits file buffers" },
+                { id: 409, a: "fprintf()", b: "Writes formatted to file" },
+                { id: 410, a: "fscanf()", b: "Reads formatted file" },
+                { id: 411, a: "EOF", b: "End of file marker" },
+                { id: 412, a: "\"r\"", b: "Stream read-only mode" },
+                { id: 413, a: "\"w\"", b: "Stream overwrite mode" },
+                { id: 414, a: "\"a\"", b: "Stream append mode" },
+                { id: 415, a: "fread()", b: "Reads binary streams" },
+                { id: 416, a: "fwrite()", b: "Writes binary payloads" },
+                { id: 417, a: "fseek()", b: "Shifts stream position" },
+                { id: 418, a: "ftell()", b: "Gets byte offset" },
+                { id: 419, a: "enum", b: "Named integer set" },
+                { id: 420, a: "rewind()", b: "Resets file pointer" }
+            ],
+            5: [ // LAYER 5: Preprocessor & Bitwise (20 Pairs)
+                { id: 501, a: "#define", b: "Establishes macro constant" },
+                { id: 502, a: "#ifdef", b: "Conditional compilation" },
+                { id: 503, a: "#ifndef", b: "Executes if undefined" },
+                { id: 504, a: "&", b: "Bitwise AND gate" },
+                { id: 505, a: "|", b: "Bitwise OR gate" },
+                { id: 506, a: "^", b: "Bitwise XOR gate" },
+                { id: 507, a: "~", b: "Bitwise NOT inversion" },
+                { id: 508, a: "<<", b: "Left bit shift multiplier" },
+                { id: 509, a: ">>", b: "Right bit shift divider" },
+                { id: 510, a: "argc", b: "Argument count parameter" },
+                { id: 511, a: "argv[]", b: "Argument vector strings" },
+                { id: 512, a: "#pragma", b: "Compiler specific hook" },
+                { id: 513, a: "__FILE__", b: "Current source filename" },
+                { id: 514, a: "__LINE__", b: "Active line integer" },
+                { id: 515, a: "inline", b: "Suggests embedded call" },
+                { id: 516, a: "volatile", b: "Bypasses cache optimization" },
+                { id: 517, a: "extern", b: "Global visibility tag" },
+                { id: 518, a: "static", b: "Maintains scope lifecycle" },
+                { id: 519, a: "#undef", b: "Revokes active macro" },
+                { id: 520, a: "register", b: "Requests CPU register" }
+            ]
+        };
+
+        let currentLevel = 1;
+        let deck = [];
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = false;
+        let moves = 0;
+        let matches = 0;
+        let score = 0;
+        let combo = 0;
+
+        const elGrid = document.getElementById('card-grid');
+        const elMoves = document.getElementById('moves-val');
+        const elPairs = document.getElementById('pairs-val');
+        const elScore = document.getElementById('score-val');
+        const elCombo = document.getElementById('combo-val');
+        const elLog = document.getElementById('decryption-log');
+        const elDeckTitle = document.getElementById('deck-title');
+        const elBadge = document.getElementById('level-badge');
+
+        // --- TRIGGER BRIEFING DISMISSAL ---
+        function dismissIntro() {
+            initAudio();
+            playSound('success');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                logTerminal("Briefing acknowledged. Core buffer accessible.", "succ");
+            }, 500);
+        }
+
+        // Helper to pull exactly 8 unique random pairs from the current massive pool
+        function getRandomSubset(array, count) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function logTerminal(text, type) {
+            const entry = document.createElement('div');
+            entry.className = `log-line log-${type}`;
+            entry.innerText = `> ${text}`;
+            elLog.appendChild(entry);
+            elLog.scrollTop = elLog.scrollHeight;
+        }
+
+        // --- SETUP LEVEL DECK ---
+        function bootCurrentLevel() {
+            initAudio();
+            elGrid.innerHTML = '';
+            firstCard = null; secondCard = null; lockBoard = false;
+            moves = 0; matches = 0; combo = 0;
+            
+            // Dynamic theme maps across all 5 tiers
+            let layerNames = { 
+                1: "LAYER 1: CORE SYNTAX", 
+                2: "LAYER 2: OPERATORS & FLOW", 
+                3: "LAYER 3: POINTERS & RAM", 
+                4: "LAYER 4: STRUCTS & I/O", 
+                5: "LAYER 5: BITWISE & MACROS" 
+            };
+            
+            let glowColors = { 
+                1: "#00f3ff", // Cyan
+                2: "#ffbb00", // Yellow
+                3: "#ff00ea", // Pink
+                4: "#00ff66", // Green
+                5: "#ff3333"  // Red
+            };
+            
+            elDeckTitle.innerText = layerNames[currentLevel];
+            elBadge.innerText = `TIER ${currentLevel} / 5`;
+            
+            // Update UI glow securely
+            document.documentElement.style.setProperty('--current-glow', glowColors[currentLevel]);
+            document.getElementById('moves-val').style.color = glowColors[currentLevel];
+
+            updateTelemetry();
+            logTerminal(`Flushing buffer... Initializing ${layerNames[currentLevel]}`, "sys");
+
+            // Randomly pull exactly 8 unique pairs from the current tier's 20-pair bank
+            const activePool = getRandomSubset(levelBanks[currentLevel], 8);
+
+            // Build individual cards from those 8 pairs
+            deck = [];
+            activePool.forEach(item => {
+                deck.push({ pairId: item.id, text: item.a });
+                deck.push({ pairId: item.id, text: item.b });
+            });
+
+            // Shuffle the 16 cards randomly
+            deck.sort(() => Math.random() - 0.5);
+
+            // Generate HTML cards
+            deck.forEach((cardItem, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.pairId = cardItem.pairId;
+                cardEl.dataset.text = cardItem.text;
+
+                cardEl.innerHTML = `
+                    <div class="card-face card-front" onmouseenter="playSound('hover')">[ ? ]</div>
+                    <div class="card-face card-back">${cardItem.text}</div>
+                `;
+
+                cardEl.onclick = () => flipCard(cardEl);
+                elGrid.appendChild(cardEl);
+            });
+        }
+
+        // --- GAMEPLAY LOGIC ---
+        function flipCard(cardEl) {
+            initAudio();
+            if (lockBoard) return;
+            if (cardEl === firstCard) return;
+            if (cardEl.classList.contains('flipped')) return;
+
+            playSound('flip');
+            cardEl.classList.add('flipped');
+
+            if (!firstCard) {
+                firstCard = cardEl;
+                return;
+            }
+
+            secondCard = cardEl;
+            lockBoard = true;
+            moves++;
+
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+
+            if (isMatch) {
+                // SUCCESS MATCH
+                combo++;
+                let multiplier = 1 + (combo * 0.5);
+                let pointsGained = Math.round(50 * multiplier);
+                score += pointsGained;
+
+                logTerminal(`BLOCK VERIFIED: [${firstCard.dataset.text}] paired. (+${pointsGained} pts)`, "succ");
+
+                setTimeout(() => {
+                    playSound('success');
+                    firstCard.classList.add('matched');
+                    secondCard.classList.add('matched');
+                    matches++;
+                    updateTelemetry();
+                    resetBoard();
+
+                    if (matches === 8) {
+                        triggerTierVictory();
+                    } else {
+                playSound('victory');
+                logTerminal(`>>> ALL ENCRYPTION LAYERS BROKEN. KERNEL MASTER DECK SECURED.`, "succ");
+                
+                // --- SAVE HIGHSCORE TO STORAGE ---
+                const oldHigh = localStorage.getItem('cbreak_match_score') || 0;
+                if (score > oldHigh) {
+                    localStorage.setItem('cbreak_match_score', score);
+                }
+
+                setTimeout(() => {
+                    elGrid.innerHTML = `
+                        <div style="grid-column: span 4; text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite;">
+                            <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--neon-green);">SYSTEM GOD UNLOCKED!</h2>
+                            <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">All 5 core programming tiers decrypted flawlessly.</p>
+                            <div style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--current-glow); margin: 20px 0;">LEGENDARY SCORE: ${score}</div>
+                            <button class="reset-btn" style="width: auto; padding: 12px 30px;" onclick="currentLevel = 1; score = 0; bootCurrentLevel();">REBOOT ENTIRE CAMPAIGN</button>
+                        </div>
+                    `;
+                }, 500);
+            }
+                }, 300);
+            } else {
+                // FAILED MATCH
+                combo = 0; // Reset combo multiplier
+                logTerminal(`MISMATCH ERROR: [${firstCard.dataset.text}] !== [${secondCard.dataset.text}]`, "err");
+
+                setTimeout(() => {
+                    playSound('error');
+                    firstCard.classList.remove('flipped');
+                    secondCard.classList.remove('flipped');
+                    score -= 5; 
+                    if(score < 0) score = 0;
+                    updateTelemetry();
+                    resetBoard();
+                }, 1000);
+            }
+            updateTelemetry();
+        }
+
+        function resetBoard() {
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+        }
+
+        function updateTelemetry() {
+            elMoves.innerText = moves;
+            elPairs.innerText = `${matches} / 8`;
+            elScore.innerText = score;
+            elCombo.innerText = `${(1 + (combo * 0.5)).toFixed(1)}x`;
+            
+            if(combo > 1) elCombo.style.color = "var(--neon-green)";
+            else elCombo.style.color = "var(--neon-yellow)";
+        }
+
+        function triggerTierVictory() {
+            if (currentLevel < 5) { 
+                playSound('level');
+                logTerminal(`>>> SECURITY LAYER ${currentLevel} COMPROMISED. ADVANCING UPLINK...`, "succ");
+                
+                setTimeout(() => {
+                    elGrid.innerHTML = `
+                        <div style="grid-column: span 4; text-align: center; padding: 50px 20px; background: rgba(0, 243, 255, 0.05); border: 2px dashed var(--current-glow); border-radius: 12px; animation: flashVictory 2s infinite;">
+                            <h2 style="font-family: 'Orbitron'; color: var(--current-glow); font-size: 2.2rem; margin: 0; text-shadow: 0 0 15px var(--current-glow);">TIER ${currentLevel} BYPASSED</h2>
+                            <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">Decrypting deeper runtime mechanics...</p>
+                            <button class="reset-btn" style="width: auto; padding: 12px 40px; margin-top: 20px;" onclick="advanceTier()">INJECT TIER ${currentLevel + 1}</button>
+                        </div>
+                    `;
+                }, 600);
+            } else {
+                playSound('victory');
+                logTerminal(`>>> ALL ENCRYPTION LAYERS BROKEN. KERNEL MASTER DECK SECURED.`, "succ");
+                
+                setTimeout(() => {
+                    elGrid.innerHTML = `
+                        <div style="grid-column: span 4; text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite;">
+                            <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--neon-green);">SYSTEM GOD UNLOCKED!</h2>
+                            <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">All 5 core programming tiers decrypted flawlessly.</p>
+                            <div style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--current-glow); margin: 20px 0;">LEGENDARY SCORE: ${score}</div>
+                            <button class="reset-btn" style="width: auto; padding: 12px 30px;" onclick="currentLevel = 1; score = 0; bootCurrentLevel();">REBOOT ENTIRE CAMPAIGN</button>
+                        </div>
+                    `;
+                }, 500);
+            }
+        }
+
+        function advanceTier() {
+            currentLevel++;
+            bootCurrentLevel();
+        }
+
+        // Initialize game on launch
+        window.onload = bootCurrentLevel;
+    </script>
+</body>
+</html>
