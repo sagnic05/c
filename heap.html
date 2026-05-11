@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Heap Away (Arrows)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-yellow: #ffbb00;
+            --neon-blue: #0088ff;
+            --grid-color: rgba(0, 136, 255, 0.05);
+        }
+
+        body, html {
+            margin: 0; padding: 0; background-color: var(--bg-base); color: #fff;
+            font-family: 'Share Tech Mono', monospace; overflow-x: hidden; user-select: none;
+        }
+
+        /* --- CRT & GRID EFFECTS --- */
+        .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(0, 136, 255, 0.05), transparent, rgba(0, 136, 255, 0.05)); pointer-events: none; z-index: 999; opacity: 0.4; }
+        .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 136, 255, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); font-weight: 900; }
+        .return-btn { color: #fff; text-decoration: none; border: 1px solid var(--neon-blue); padding: 5px 15px; border-radius: 4px; transition: 0.3s; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; }
+        .return-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1050px; margin: 100px auto 40px; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 25px; 
+        }
+
+        /* --- INTRO BRIEFING OVERLAY --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(25px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .intro-box {
+            max-width: 650px; text-align: center; border-color: var(--neon-blue);
+            box-shadow: 0 0 50px rgba(0, 136, 255, 0.2);
+        }
+
+        /* --- TELEMETRY SIDEBAR --- */
+        .telemetry-box { display: flex; flex-direction: column; gap: 20px; height: fit-content; }
+        .module-title { font-family: 'Orbitron'; color: var(--neon-blue); font-size: 1.4rem; margin: 0; text-shadow: 0 0 8px var(--neon-blue); }
+        .status-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .status-val { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: bold; }
+        
+        .timer-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-blue); padding: 15px; border-radius: 6px; box-shadow: inset 0 0 10px rgba(0, 136, 255, 0.1); text-align: center; }
+        .timer-val { font-family: 'Orbitron'; font-size: 2.2rem; color: var(--neon-blue); font-weight: 900; text-shadow: 0 0 10px var(--neon-blue); margin-top: 5px; }
+
+        .action-btn { 
+            background: rgba(0, 136, 255, 0.1); border: 1px solid var(--neon-blue); color: var(--neon-blue); 
+            padding: 12px; font-family: 'Orbitron'; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px;
+        }
+        .action-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+
+        /* --- TAP AWAY WORKSPACE --- */
+        .workspace { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        .board-container {
+            background: rgba(5, 10, 15, 0.8); padding: 25px; border-radius: 12px;
+            border: 2px solid rgba(0, 136, 255, 0.3); box-shadow: 0 0 30px rgba(0, 136, 255, 0.15);
+            display: flex; justify-content: center; align-items: center; position: relative;
+            overflow: hidden; width: 100%; max-width: 500px; aspect-ratio: 1;
+        }
+
+        .grid {
+            display: grid; grid-template-columns: repeat(6, 65px); grid-template-rows: repeat(6, 65px);
+            gap: 10px; position: relative;
+        }
+
+        .block {
+            width: 65px; height: 65px; background: linear-gradient(135deg, rgba(20,30,50,0.9), rgba(10,15,25,0.9));
+            border: 2px solid var(--neon-blue); border-radius: 10px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; cursor: pointer; font-family: 'Orbitron';
+            box-sizing: border-box; transition: transform 0.2s ease, background 0.3s, border-color 0.3s;
+            box-shadow: inset 0 0 10px rgba(0,136,255,0.2), 0 4px 10px rgba(0,0,0,0.5);
+            position: absolute;
+        }
+
+        .block:hover { border-color: #fff; box-shadow: inset 0 0 15px rgba(255,255,255,0.4), 0 0 15px var(--neon-blue); transform: scale(1.05); z-index: 10; }
+
+        .arrow { font-size: 1.8rem; font-weight: bold; color: #fff; text-shadow: 0 0 8px var(--neon-cyan); pointer-events: none; }
+        .lbl-ptr { font-size: 0.65rem; color: var(--neon-cyan); font-family: 'Share Tech Mono'; margin-top: 2px; pointer-events: none; }
+
+        /* Custom Eject Animations */
+        .block.fly-up { transform: translateY(-400px) scale(0.5); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); }
+        .block.fly-down { transform: translateY(400px) scale(0.5); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); }
+        .block.fly-left { transform: translateX(-400px) scale(0.5); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); }
+        .block.fly-right { transform: translateX(400px) scale(0.5); opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.1, 0.8, 0.3, 1); }
+
+        .block.bump-up { animation: bumpUp 0.25s ease; }
+        .block.bump-down { animation: bumpDown 0.25s ease; }
+        .block.bump-left { animation: bumpLeft 0.25s ease; }
+        .block.bump-right { animation: bumpRight 0.25s ease; }
+
+        @keyframes bumpUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes bumpDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+        @keyframes bumpLeft { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-10px); } }
+        @keyframes bumpRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+
+        /* Terminal Execution Log */
+        .terminal-log {
+            width: 100%; background: #000; border: 1px solid #333; border-left: 3px solid var(--neon-green);
+            padding: 12px 15px; border-radius: 4px; height: 90px; overflow-y: auto; font-size: 0.9rem;
+            display: flex; flex-direction: column; gap: 4px; box-sizing: border-box;
+        }
+        .log-line { margin: 0; }
+        .log-sys { color: #888; }
+        .log-free { color: var(--neon-green); font-family: 'Orbitron'; font-weight: bold; }
+        .log-err { color: var(--neon-pink); }
+
+        @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <a href="index.html" class="return-btn">RETURN TO HUB</a>
+    </nav>
+
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="glass-panel intro-box">
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-blue); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-blue);">HEAP AWAY v4.1</h1>
+            <div class="status-label" style="display: inline-block; border: 1px solid var(--neon-blue); padding: 4px 12px; border-radius: 4px; color: var(--neon-blue); margin-bottom: 20px;">MEMORY OPTIMIZATION MODULE</div>
+            
+            <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
+                Operators must maintain a clean Heap to prevent memory leaks. Your objective is to de-allocate dynamic pointer blocks by ejecting them from the buffer cluster.
+            </p>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-green); margin-bottom: 25px;">
+                <div style="color: var(--neon-green); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">TACTICAL PARAMETERS:</div>
+                <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.95rem; line-height: 1.8;">
+                    <li><strong style="color: #fff;">Execute free():</strong> Tap a block to slide it out. It only moves if its arrow's path is clear.</li>
+                    <li><strong style="color: #fff;">Avoid Deadlocks:</strong> If a block bumps into a neighbor, you must free that neighbor first.</li>
+                    <li><strong style="color: #fff;">Clear Time:</strong> The system tracks your speed. Faster de-allocation scores more points.</li>
+                </ul>
+            </div>
+
+            <button class="action-btn" style="width: auto; padding: 12px 40px; margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE HEAP BUFFER</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="glass-panel telemetry-box">
+            <h2 class="module-title">FREE() THE HEAP</h2>
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0;">Unblock Stack via Pointers.</p>
+            <hr style="width: 100%; border-color: rgba(255,255,255,0.1); margin: 0;">
+
+            <div class="timer-box">
+                <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon-blue); font-weight: bold;">HEAP ELAPSED TIME</div>
+                <div class="timer-val" id="timer-val">00.0s</div>
+            </div>
+
+            <div>
+                <div class="status-label">FASTEST HEAP RECORD</div>
+                <div class="status-val" id="best-val" style="color: var(--neon-green);">--</div>
+            </div>
+
+            <div>
+                <div class="status-label">POINTERS FREED</div>
+                <div class="status-val" id="freed-val" style="color: var(--neon-cyan);">0 / 24</div>
+            </div>
+
+            <div>
+                <div class="status-label">TAPS COMMITTED</div>
+                <div class="status-val" id="taps-val" style="color: var(--neon-yellow);">0</div>
+            </div>
+
+            <button class="action-btn" onclick="location.reload()" onmouseenter="playSound('hover')">REBOOT HEAP</button>
+        </div>
+
+        <div class="glass-panel workspace" id="workspace-area">
+            <div style="width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <div style="color: var(--neon-blue); font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold;">MEMORY DE-ALLOCATOR</div>
+                <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Tap unblocked pointer arrows to execute <code style="color: var(--neon-green);">free()</code> commands and release heap bytes.</div>
+            </div>
+
+            <div class="board-container">
+                <div class="grid" id="grid"></div>
+            </div>
+
+            <div class="terminal-log" id="terminal-log">
+                <div class="log-line log-sys">> Uplink established. Dynamic memory clustered on Heap.</div>
+                <div class="log-line log-sys">> Awaiting pointer de-allocation commands...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playSound(type) {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'hover') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'free') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(880, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'bump') { osc.type = 'triangle'; osc.frequency.setValueAtTime(120, now); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+            else if (type === 'victory') { 
+                const freqs = [440, 554.37, 659.25, 880];
+                freqs.forEach((freq, i) => {
+                    const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                    vOsc.type = 'square'; vOsc.frequency.value = freq;
+                    vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                    vGain.gain.setValueAtTime(0, now + i * 0.15); vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05); vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                    vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                });
+            }
+        }
+
+        const size = 6;
+        const cellSize = 65;
+        const gap = 10;
+        const totalBlocks = 24;
+        const arrows = [
+            { dir: 'up', symbol: '⬆️', check: (r, c, board) => isClearUp(r, c, board) },
+            { dir: 'down', symbol: '⬇️', check: (r, c, board) => isClearDown(r, c, board) },
+            { dir: 'left', symbol: '⬅️', check: (r, c, board) => isClearLeft(r, c, board) },
+            { dir: 'right', symbol: '➡️', check: (r, c, board) => isClearRight(r, c, board) }
+        ];
+        const pointerLabels = ["*p1", "*ptr", "*arr", "*str", "*node", "*data", "*buf", "*obj"];
+
+        let boardGrid = [];
+        let blocksLeft = totalBlocks;
+        let taps = 0;
+        let isProcessing = false;
+        let timerInterval = null;
+        let elapsedMs = 0;
+
+        const elGrid = document.getElementById('grid');
+        const elFreed = document.getElementById('freed-val');
+        const elTaps = document.getElementById('taps-val');
+        const elTimer = document.getElementById('timer-val');
+        const elBest = document.getElementById('best-val');
+        const elLog = document.getElementById('terminal-log');
+
+        function logTerminal(text, type) {
+            const entry = document.createElement('div');
+            entry.className = `log-line log-${type}`;
+            entry.innerText = `> ${text}`;
+            elLog.appendChild(entry);
+            elLog.scrollTop = elLog.scrollHeight;
+        }
+
+        function dismissIntro() {
+            initAudio();
+            playSound('free');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                startTimer();
+                logTerminal("Briefing acknowledged. Memory buffer unsealed.", "sys");
+            }, 500);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            elapsedMs = 0;
+            elTimer.innerText = "00.0s";
+            const startStamp = Date.now();
+            timerInterval = setInterval(() => {
+                elapsedMs = Date.now() - startStamp;
+                elTimer.innerText = `${(elapsedMs / 1000).toFixed(1).padStart(4, '0')}s`;
+            }, 100);
+        }
+
+        function loadBestRecord() {
+            const best = localStorage.getItem('cbreak_heap_best');
+            elBest.innerText = best ? `${parseFloat(best).toFixed(1)}s` : '--';
+        }
+
+        function initLevel() {
+            elGrid.innerHTML = '';
+            boardGrid = Array(size).fill(null).map(() => Array(size).fill(null));
+            let assemblyBoard = Array(size).fill(null).map(() => Array(size).fill(null));
+            blocksLeft = totalBlocks; taps = 0; isProcessing = false;
+            
+            elGrid.style.width = `${size * cellSize + (size - 1) * gap}px`;
+            elGrid.style.height = `${size * cellSize + (size - 1) * gap}px`;
+
+            let targetFootprints = [
+                {r: 2, c: 2}, {r: 2, c: 3}, {r: 3, c: 2}, {r: 3, c: 3},
+                {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4},
+                {r: 2, c: 1}, {r: 2, c: 4}, {r: 3, c: 1}, {r: 3, c: 4},
+                {r: 4, c: 1}, {r: 4, c: 2}, {r: 4, c: 3}, {r: 4, c: 4},
+                {r: 0, c: 2}, {r: 0, c: 3}, {r: 5, c: 2}, {r: 5, c: 3},
+                {r: 2, c: 0}, {r: 3, c: 0}, {r: 2, c: 5}, {r: 3, c: 5}
+            ];
+
+            let idCounter = 0;
+            targetFootprints.forEach(slot => {
+                let unblockedVectors = [];
+                if (isClearUp(slot.r, slot.c, assemblyBoard)) unblockedVectors.push('up');
+                if (isClearDown(slot.r, slot.c, assemblyBoard)) unblockedVectors.push('down');
+                if (isClearLeft(slot.r, slot.c, assemblyBoard)) unblockedVectors.push('left');
+                if (isClearRight(slot.r, slot.c, assemblyBoard)) unblockedVectors.push('right');
+
+                let direction = unblockedVectors.length > 0 ? unblockedVectors[Math.floor(Math.random() * unblockedVectors.length)] : 'up';
+                let arrowObj = arrows.find(a => a.dir === direction);
+                let lbl = pointerLabels[Math.floor(Math.random() * pointerLabels.length)];
+
+                let blockData = { id: idCounter++, row: slot.r, col: slot.c, arrow: arrowObj, label: lbl, el: null };
+                assemblyBoard[slot.r][slot.c] = blockData;
+                boardGrid[slot.r][slot.c] = blockData;
+
+                const blockEl = document.createElement('div');
+                blockEl.className = 'block';
+                blockEl.style.left = `${slot.c * (cellSize + gap)}px`;
+                blockEl.style.top = `${slot.r * (cellSize + gap)}px`;
+                blockEl.innerHTML = `<div class="arrow">${arrowObj.symbol}</div><div class="lbl-ptr">${lbl}</div>`;
+                blockEl.onclick = () => tapBlock(blockData);
+                blockData.el = blockEl;
+                elGrid.appendChild(blockEl);
+            });
+
+            updateTelemetry();
+            loadBestRecord();
+        }
+
+        function isClearUp(r, c, board) { for (let scanR = r - 1; scanR >= 0; scanR--) { if (board[scanR][c] !== null) return false; } return true; }
+        function isClearDown(r, c, board) { for (let scanR = r + 1; scanR < size; scanR++) { if (board[scanR][c] !== null) return false; } return true; }
+        function isClearLeft(r, c, board) { for (let scanC = c - 1; scanC >= 0; scanC--) { if (board[r][scanC] !== null) return false; } return true; }
+        function isClearRight(r, c, board) { for (let scanC = c + 1; scanC < size; scanC++) { if (board[r][scanC] !== null) return false; } return true; }
+
+        function tapBlock(block) {
+            initAudio();
+            if (isProcessing || !block.el) return;
+            taps++; updateTelemetry();
+
+            if (block.arrow.check(block.row, block.col, boardGrid)) {
+                isProcessing = true; playSound('free');
+                logTerminal(`free(${block.label}); // Success. Path clear.`, "free");
+                boardGrid[block.row][block.col] = null;
+                blocksLeft--;
+                block.el.classList.add(`fly-${block.arrow.dir}`);
+                setTimeout(() => {
+                    if (block.el && block.el.parentNode) block.el.remove();
+                    isProcessing = false; updateTelemetry();
+                    if (blocksLeft === 0) { clearInterval(timerInterval); setTimeout(triggerVictory, 300); }
+                }, 350);
+            } else {
+                playSound('bump');
+                logTerminal(`ERROR: Cannot free(${block.label}). Pointer is locked.`, "err");
+                block.el.classList.remove(`bump-${block.arrow.dir}`);
+                void block.el.offsetWidth; 
+                block.el.classList.add(`bump-${block.arrow.dir}`);
+            }
+        }
+
+        function updateTelemetry() { elFreed.innerText = `${totalBlocks - blocksLeft} / ${totalBlocks}`; elTaps.innerText = taps; }
+
+        function triggerVictory() {
+            playSound('victory');
+            const finalSecs = (elapsedMs / 1000).toFixed(1);
+            const oldBest = localStorage.getItem('cbreak_heap_best');
+            if (!oldBest || parseFloat(finalSecs) < parseFloat(oldBest)) {
+                localStorage.setItem('cbreak_heap_best', finalSecs);
+                loadBestRecord();
+            }
+            document.getElementById('workspace-area').innerHTML = `
+                <div style="text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite; width: 100%; max-width: 500px;">
+                    <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0;">HEAP SANITIZED!</h2>
+                    <p style="color: #ccc; margin-top: 10px;">Memory successfully de-allocated.</p>
+                    <div style="font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-blue); margin: 20px 0;">TIME: ${finalSecs}s</div>
+                    <button class="action-btn" style="width: auto; padding: 12px 30px;" onclick="location.reload()">REBOOT STACK</button>
+                </div>
+            `;
+        }
+
+        window.onload = initLevel;
+    </script>
+</body>
+</html>

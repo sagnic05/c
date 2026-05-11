@@ -15,7 +15,7 @@
             --neon-red: #ff3333;
             --neon-yellow: #ffbb00;
             --grid-color: rgba(0, 243, 255, 0.05);
-            --current-glow: #00f3ff;
+            --current-glow: #ffbb00; /* Defaulting initial state to Neon Yellow */
         }
 
         body, html {
@@ -51,8 +51,8 @@
             transition: opacity 0.5s ease;
         }
         .intro-box {
-            max-width: 650px; text-align: center; border-color: var(--neon-cyan);
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
+            max-width: 650px; text-align: center; border-color: var(--neon-yellow);
+            box-shadow: 0 0 50px rgba(255, 187, 0, 0.2);
         }
 
         /* --- TELEMETRY SIDEBAR --- */
@@ -180,8 +180,8 @@
 
     <div id="intro-overlay" class="intro-overlay">
         <div class="glass-panel intro-box">
-            <h1 style="font-family: 'Orbitron'; color: var(--neon-cyan); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-cyan);">SYNTAX MATCH v3.1</h1>
-            <div class="level-badge" style="display: inline-block; margin-bottom: 20px; border-color: var(--neon-cyan); color: var(--neon-cyan);">OPERATOR BRIEFING</div>
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-yellow); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-yellow);">SYNTAX MATCH v3.1</h1>
+            <div class="level-badge" style="display: inline-block; margin-bottom: 20px; border-color: var(--neon-yellow); color: var(--neon-yellow);">OPERATOR BRIEFING</div>
             
             <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
                 Welcome to the secure memory buffer. Abstract C programming concepts have been scrambled into cryptographic grid blocks. Your directive is to locate and decrypt all matching runtime pairs in the fewest moves possible.
@@ -190,14 +190,14 @@
             <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-pink); margin-bottom: 25px;">
                 <div style="color: var(--neon-pink); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">MISSION PARAMETERS:</div>
                 <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.95rem; line-height: 1.8;">
-                    <li><strong style="color: #fff;">Match Pairs:</strong> Flip blocks to pair C syntax (e.g., <code style="color: var(--neon-cyan);">printf()</code>) with its correct definition.</li>
+                    <li><strong style="color: #fff;">Match Pairs:</strong> Flip blocks to pair C syntax (e.g., <code style="color: var(--neon-yellow);">printf()</code>) with its correct definition.</li>
                     <li><strong style="color: #fff;">Build Combos:</strong> Consecutive matches supercharge your score multiplier.</li>
                     <li><strong style="color: #fff;">5 Security Layers:</strong> Clearing a board automatically pulls fresh variables and injects the next difficulty tier.</li>
                     <li><strong style="color: #fff;">Penalties:</strong> Mismatches reset your combo multiplier to zero and drain operational points.</li>
                 </ul>
             </div>
 
-            <button class="abort-btn" style="background: rgba(0, 243, 255, 0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE TRAINING DECK</button>
+            <button class="abort-btn" style="background: rgba(255, 187, 0, 0.1); border-color: var(--neon-yellow); color: var(--neon-yellow); margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE TRAINING DECK</button>
         </div>
     </div>
 
@@ -406,15 +406,6 @@
         let score = 0;
         let combo = 0;
 
-        const elGrid = document.getElementById('card-grid');
-        const elMoves = document.getElementById('moves-val');
-        const elPairs = document.getElementById('pairs-val');
-        const elScore = document.getElementById('score-val');
-        const elCombo = document.getElementById('combo-val');
-        const elLog = document.getElementById('decryption-log');
-        const elDeckTitle = document.getElementById('deck-title');
-        const elBadge = document.getElementById('level-badge');
-
         // --- TRIGGER BRIEFING DISMISSAL ---
         function dismissIntro() {
             initAudio();
@@ -426,6 +417,15 @@
                 logTerminal("Briefing acknowledged. Core buffer accessible.", "succ");
             }, 500);
         }
+
+        const elGrid = document.getElementById('card-grid');
+        const elMoves = document.getElementById('moves-val');
+        const elPairs = document.getElementById('pairs-val');
+        const elScore = document.getElementById('score-val');
+        const elCombo = document.getElementById('combo-val');
+        const elLog = document.getElementById('decryption-log');
+        const elDeckTitle = document.getElementById('deck-title');
+        const elBadge = document.getElementById('level-badge');
 
         // Helper to pull exactly 8 unique random pairs from the current massive pool
         function getRandomSubset(array, count) {
@@ -457,9 +457,10 @@
                 5: "LAYER 5: BITWISE & MACROS" 
             };
             
+            // Fixed initial level to Yellow to preserve cohesive theme sync
             let glowColors = { 
-                1: "#00f3ff", // Cyan
-                2: "#ffbb00", // Yellow
+                1: "#ffbb00", // Yellow
+                2: "#00f3ff", // Cyan
                 3: "#ff00ea", // Pink
                 4: "#00ff66", // Green
                 5: "#ff3333"  // Red
@@ -549,27 +550,7 @@
 
                     if (matches === 8) {
                         triggerTierVictory();
-                    } else {
-                playSound('victory');
-                logTerminal(`>>> ALL ENCRYPTION LAYERS BROKEN. KERNEL MASTER DECK SECURED.`, "succ");
-                
-                // --- SAVE HIGHSCORE TO STORAGE ---
-                const oldHigh = localStorage.getItem('cbreak_match_score') || 0;
-                if (score > oldHigh) {
-                    localStorage.setItem('cbreak_match_score', score);
-                }
-
-                setTimeout(() => {
-                    elGrid.innerHTML = `
-                        <div style="grid-column: span 4; text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite;">
-                            <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--neon-green);">SYSTEM GOD UNLOCKED!</h2>
-                            <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">All 5 core programming tiers decrypted flawlessly.</p>
-                            <div style="font-family: 'Orbitron'; font-size: 1.8rem; color: var(--current-glow); margin: 20px 0;">LEGENDARY SCORE: ${score}</div>
-                            <button class="reset-btn" style="width: auto; padding: 12px 30px;" onclick="currentLevel = 1; score = 0; bootCurrentLevel();">REBOOT ENTIRE CAMPAIGN</button>
-                        </div>
-                    `;
-                }, 500);
-            }
+                    }
                 }, 300);
             } else {
                 // FAILED MATCH
@@ -623,6 +604,12 @@
                 playSound('victory');
                 logTerminal(`>>> ALL ENCRYPTION LAYERS BROKEN. KERNEL MASTER DECK SECURED.`, "succ");
                 
+                // --- SAVE HIGHSCORE TO STORAGE ---
+                const oldHigh = localStorage.getItem('cbreak_match_score') || 0;
+                if (score > oldHigh) {
+                    localStorage.setItem('cbreak_match_score', score);
+                }
+
                 setTimeout(() => {
                     elGrid.innerHTML = `
                         <div style="grid-column: span 4; text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite;">

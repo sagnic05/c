@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Terminal Escape: Full-Stack Compilation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ffcc; /* UPGRADED TO EXCLUSIVE NEON MINT */
+            --neon-yellow: #ffbb00;
+            --neon-crimson: #ff0055;
+            --neon-purple: #9900ff;
+            --grid-color: rgba(0, 255, 204, 0.05);
+        }
+
+        body, html {
+            margin: 0; padding: 0; background-color: var(--bg-base); color: #fff;
+            font-family: 'Share Tech Mono', monospace; overflow-x: hidden; user-select: none;
+        }
+
+        /* --- CRT & GRID EFFECTS --- */
+        .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(0, 255, 204, 0.05), transparent, rgba(0, 255, 204, 0.05)); pointer-events: none; z-index: 999; opacity: 0.4; }
+        .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 204, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); font-weight: 900; }
+        .return-btn { color: #fff; text-decoration: none; border: 1px solid var(--neon-green); padding: 5px 15px; border-radius: 4px; transition: 0.3s; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; }
+        .return-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1350px; margin: 100px auto 40px; padding: 20px; display: grid; grid-template-columns: 340px 1fr; gap: 30px; }
+        
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 25px; 
+        }
+
+        /* --- INTRO OVERLAY --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(25px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .intro-box { max-width: 750px; text-align: center; border-color: var(--neon-green); box-shadow: 0 0 50px rgba(0, 255, 204, 0.2); }
+
+        /* --- TELEMETRY SIDEBAR --- */
+        .telemetry-box { display: flex; flex-direction: column; gap: 16px; height: fit-content; }
+        .module-title { font-family: 'Orbitron'; color: var(--neon-green); font-size: 1.4rem; margin: 0; text-shadow: 0 0 8px var(--neon-green); }
+        .status-label { font-size: 0.8rem; color: #888; margin-bottom: 4px; text-transform: uppercase; }
+        .status-val { font-family: 'Orbitron'; font-size: 1.6rem; font-weight: bold; }
+        
+        .timer-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-green); padding: 12px; border-radius: 6px; box-shadow: inset 0 0 10px rgba(0, 255, 204, 0.1); text-align: center; }
+        .timer-val { font-family: 'Orbitron'; font-size: 2.2rem; color: var(--neon-green); font-weight: 900; text-shadow: 0 0 10px var(--neon-green); margin-top: 4px; }
+
+        .tier-badge { display: inline-block; padding: 6px 12px; background: rgba(255,187,0,0.1); border: 1px solid var(--neon-yellow); border-radius: 4px; font-family: 'Orbitron'; font-size: 1.2rem; color: var(--neon-yellow); font-weight: bold; text-shadow: 0 0 5px var(--neon-yellow); }
+
+        .action-btn { 
+            background: rgba(0, 255, 204, 0.1); border: 1px solid var(--neon-green); color: var(--neon-green); 
+            padding: 12px; font-family: 'Orbitron'; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 5px;
+        }
+        .action-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
+
+        /* --- WORKSPACE & IDE --- */
+        .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+
+        .directive-box {
+            background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan); border-left: 5px solid var(--neon-cyan);
+            padding: 15px 20px; border-radius: 6px; box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05);
+        }
+        .directive-title { font-family: 'Orbitron'; color: var(--neon-cyan); font-size: 1.1rem; font-weight: bold; }
+        .directive-desc { font-size: 1.05rem; color: #fff; margin-top: 8px; line-height: 1.5; font-family: 'Share Tech Mono'; }
+        .directive-params { font-size: 0.9rem; color: var(--neon-yellow); margin-top: 10px; font-family: 'Share Tech Mono'; }
+
+        /* Core Editor Panel */
+        .ide-container {
+            display: flex; flex-direction: column; width: 100%; background: #050508;
+            border: 2px solid #333; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .ide-header {
+            background: #111; padding: 10px 15px; border-bottom: 1px solid #333;
+            display: flex; justify-content: space-between; align-items: center; font-family: 'Orbitron'; font-size: 0.85rem; color: #aaa;
+        }
+        
+        /* Multi-line Code Area */
+        .editor-wrapper { display: flex; width: 100%; position: relative; }
+        .line-numbers {
+            background: #0a0f18; color: #555; padding: 15px 10px; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem;
+            text-align: right; user-select: none; border-right: 1px solid #222; width: 40px; box-sizing: border-box;
+        }
+        .code-input {
+            flex: 1; background: #020305; border: none; padding: 15px; color: #00f3ff; font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem; line-height: 1.5; outline: none; resize: none; min-height: 280px; tab-size: 4;
+        }
+        .code-input:focus { background: #05070a; }
+
+        /* Integrated Output Console */
+        .stdout-terminal {
+            background: #000; border-top: 2px solid var(--neon-green); padding: 12px 15px; height: 130px; overflow-y: auto; font-size: 0.9rem; display: flex; flex-direction: column; gap: 4px;
+        }
+        .log-line { margin: 0; font-family: 'Share Tech Mono'; }
+        .log-sys { color: #888; }
+        .log-input { color: var(--neon-cyan); }
+        .log-success { color: var(--neon-green); font-weight: bold; }
+        .log-err { color: var(--neon-crimson); font-weight: bold; }
+
+        @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <a href="index.html" class="return-btn">RETURN TO HUB</a>
+    </nav>
+
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="glass-panel intro-box">
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-green);">FULL-STACK IDE v5.4</h1>
+            <div class="status-label" style="display: inline-block; border: 1px solid var(--neon-green); padding: 4px 12px; border-radius: 4px; color: var(--neon-green); margin-bottom: 20px;">SECURITY ESCAPE ENGINE</div>
+            
+            <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
+                You have bypassed the peripheral modules and entered the core automated mainframe. To escape each security layer, you must write 100% compile-ready C source code from scratch. The internal engine will parse your entire architecture, inject randomized runtime test vectors, and evaluate your final operational output.
+            </p>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-yellow); margin-bottom: 25px;">
+                <div style="color: var(--neon-yellow); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">MAINFRAME COMPILATION RULES:</div>
+                <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.9rem; line-height: 1.8;">
+                    <li><strong style="color: #fff;">Write Complete Code:</strong> You must supply full structural code, including headers (<code style="color: var(--neon-cyan);">#include &lt;stdio.h&gt;</code>) and proper return declarations.</li>
+                    <li><strong style="color: #fff;">Dynamic Input Integration:</strong> The system verifies outputs using hardcoded internal inputs. Structure your logic precisely based on the active assignment parameters.</li>
+                    <li><strong style="color: #fff;">50 Progressive Tiers:</strong> Problems scale procedurally across 50 tiers. Every time you boot the terminal, pull fresh challenges, or advance tiers, the engine populates a brand new randomized algorithmic configuration!</li>
+                </ul>
+            </div>
+
+            <button class="action-btn" style="width: auto; padding: 12px 40px; margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE MAINFRAME</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="glass-panel telemetry-box">
+            <h2 class="module-title">IDE COMPILER</h2>
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0;">50-Tier Security Matrix.</p>
+            
+            <hr style="width: 100%; border-color: rgba(255,255,255,0.1); margin: 0;">
+
+            <div class="timer-box">
+                <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon-green); font-weight: bold;">MAINFRAME CLOCK</div>
+                <div class="timer-val" id="timer-val">00.0s</div>
+            </div>
+
+            <div style="text-align: center; margin: 5px 0;">
+                <div class="status-label">ACTIVE SECURITY TIER</div>
+                <div id="tier-val" class="tier-badge">TIER 1 / 50</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <div class="status-label">HIGHEST TIER</div>
+                    <div class="status-val" id="best-tier-val" style="color: var(--neon-yellow); font-size: 1.3rem;">TIER 0</div>
+                </div>
+                <div>
+                    <div class="status-label">LINES WRITTEN</div>
+                    <div class="status-val" id="lines-val" style="color: var(--neon-cyan); font-size: 1.3rem;">0</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="status-label">COMPILE STATUS</div>
+                <div class="status-val" id="compile-status-val" style="color: #aaa; font-size: 1.2rem;">AWAITING CODE</div>
+            </div>
+
+            <button class="action-btn" onclick="pullFreshQuestion()" onmouseenter="playSound('hover')">PULL FRESH ASSIGNMENT</button>
+            <button class="action-btn" style="border-color: #555; color: #aaa; background: transparent;" onclick="location.reload()" onmouseenter="playSound('hover')">REBOOT KERNEL</button>
+        </div>
+
+        <div class="glass-panel workspace" id="workspace-area">
+            
+            <div class="directive-box">
+                <div class="directive-title" id="directive-title">ASSIGNMENT DIRECTIVE</div>
+                <div class="directive-desc" id="directive-desc">Loading algorithmic requirement definitions...</div>
+                <div class="directive-params" id="directive-params">> SYSTEM INPUT PARAMETERS: --</div>
+            </div>
+
+            <div class="ide-container">
+                <div class="ide-header">
+                    <span>main.c — Source Buffer</span>
+                    <span style="color: var(--neon-yellow); cursor: pointer;" onclick="injectBoilerplate()" onmouseenter="playSound('hover')">⚡ INJECT BOILERPLATE</span>
+                </div>
+                
+                <div class="editor-wrapper">
+                    <div class="line-numbers" id="line-numbers">
+                        1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10
+                    </div>
+                    <textarea id="code-input" class="code-input" autocomplete="off" spellcheck="false" oninput="updateEditorLines()" onkeydown="handleTabs(event)"></textarea>
+                </div>
+
+                <div class="stdout-terminal" id="stdout-terminal">
+                    <div class="log-line log-sys">> IDE loaded safely. Compiler registers unsealed.</div>
+                    <div class="log-line log-sys">> Awaiting operator compilation submission...</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; width: 100%;">
+                <button class="action-btn" style="flex: 1; padding: 15px; font-size: 1.2rem; background: var(--neon-green); color: #000;" onclick="compileAndExecute()" onmouseenter="playSound('hover')">COMPILE & EXECUTE CODE</button>
+                <button class="action-btn" style="width: auto; padding: 15px 25px; border-color: var(--neon-cyan); color: var(--neon-cyan); background: transparent;" onclick="scanHint()" onmouseenter="playSound('hover')">🔍 ALGORITHM HINT</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // --- NATIVE AUDIO ENGINE ---
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playSound(type) {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'hover') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.25); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.25); osc.start(now); osc.stop(now + 0.25); }
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+            else if (type === 'victory') { 
+                const freqs = [440, 554.37, 659.25, 880];
+                freqs.forEach((freq, i) => {
+                    const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                    vOsc.type = 'square'; vOsc.frequency.value = freq;
+                    vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                    vGain.gain.setValueAtTime(0, now + i * 0.15); vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05); vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                    vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                });
+            }
+        }
+
+        // --- 50-TIER PROCEDURAL ALGORITHM DATABASE (Fully Sanitized Backslash Overrides) ---
+        const masterTierDatabase = [
+            { t: 1, name: "Basic Summation", gen: () => { let a = Math.floor(Math.random()*50)+1; let b = Math.floor(Math.random()*50)+1; return { desc: `Write a complete C program that declares two integers with values ${a} and ${b}, calculates their sum, and prints ONLY the resulting sum integer directly to standard output.`, p: `Values: a = ${a}, b = ${b}`, verify: (code) => { let sum = a + b; return checkRegexOutput(code, sum.toString(), ["\\+", "printf"]); }, hint: "Declare integers, add them, use printf(\"%d\", sum);" }; }},
+            { t: 2, name: "Variable Multiplication", gen: () => { let x = Math.floor(Math.random()*12)+2; let y = Math.floor(Math.random()*12)+2; return { desc: `Write complete C code to multiply the integers ${x} and ${y}. Print exactly the final product integer to stdout.`, p: `Values: x = ${x}, y = ${y}`, verify: (code) => { let prod = x * y; return checkRegexOutput(code, prod.toString(), ["\\*", "printf"]); }, hint: "Multiply using the * operator and output via printf." }; }},
+            { t: 3, name: "Basic Subtraction", gen: () => { let m = Math.floor(Math.random()*100)+50; let n = Math.floor(Math.random()*40)+1; return { desc: `Write full C code that subtracts ${n} from ${m} and outputs ONLY the resulting integer value.`, p: `Values: m = ${m}, n = ${n}`, verify: (code) => { let diff = m - n; return checkRegexOutput(code, diff.toString(), ["-", "printf"]); }, hint: "Perform m - n and output the exact calculated numeric result." }; }},
+            { t: 4, name: "Integer Modulo", gen: () => { let base = Math.floor(Math.random()*50)+20; let mod = Math.floor(Math.random()*8)+3; return { desc: `Write a complete C program that calculates the remainder when ${base} is divided by ${mod} using the modulo operator. Print the result.`, p: `Values: Base = ${base}, Divisor = ${mod}`, verify: (code) => { let rem = base % mod; return checkRegexOutput(code, rem.toString(), ["%", "printf"]); }, hint: "Use the % modulo operator to extract the remainder." }; }},
+            { t: 5, name: "Area of a Rectangle", gen: () => { let w = Math.floor(Math.random()*15)+5; let h = Math.floor(Math.random()*15)+5; return { desc: `Write full C source code to calculate the area of a rectangle with width ${w} and height ${h}. Print the output.`, p: `Dimensions: Width = ${w}, Height = ${h}`, verify: (code) => { let area = w * h; return checkRegexOutput(code, area.toString(), ["\\*", "printf"]); }, hint: "Area formula is width * height. Declare both variables." }; }},
+            { t: 6, name: "Even or Odd Evaluation", gen: () => { let val = Math.floor(Math.random()*100)+1; let isEven = val % 2 === 0; return { desc: `Write a C program that evaluates if the integer ${val} is even or odd. If even, print exactly 'EVEN'. If odd, print exactly 'ODD'.`, p: `Input Integer: ${val}`, verify: (code) => { let expected = isEven ? "EVEN" : "ODD"; return checkConditionalOutput(code, expected, ["if", "%", "printf"]); }, hint: "Use an if() statement checking val % 2 == 0." }; }},
+            { t: 7, name: "Maximum of Two Numbers", gen: () => { let n1 = Math.floor(Math.random()*200); let n2 = Math.floor(Math.random()*200); if(n1===n2) n1++; let max = Math.max(n1, n2); return { desc: `Write complete C logic to compare ${n1} and ${n2}. Output ONLY the maximum of the two numbers.`, p: `Inputs: ${n1}, ${n2}`, verify: (code) => { return checkConditionalOutput(code, max.toString(), ["if", "printf"]); }, hint: "Use if(n1 > n2) to evaluate maximums." }; }},
+            { t: 8, name: "Minimum of Three Numbers", gen: () => { let v1 = Math.floor(Math.random()*90)+10; let v2 = Math.floor(Math.random()*90)+10; let v3 = Math.floor(Math.random()*90)+10; let min = Math.min(v1, v2, v3); return { desc: `Write complete C source code to find the minimum value among ${v1}, ${v2}, and ${v3}. Print the lowest numeric value.`, p: `Inputs: ${v1}, ${v2}, ${v3}`, verify: (code) => { return checkConditionalOutput(code, min.toString(), ["if", "printf"]); }, hint: "Use chained if-else blocks or logical AND (&&) gates." }; }},
+            { t: 9, name: "Simple Loop Accumulator", gen: () => { let lim = Math.floor(Math.random()*5)+4; let total = 0; for(let i=1; i<=lim; i++) total += i; return { desc: `Write a complete C loop (for or while) that adds all integers from 1 up to ${lim} inclusive. Print ONLY the final sum.`, p: `Limit: ${lim}`, verify: (code) => { return checkLoopOutput(code, total.toString(), ["for|while", "\\+=", "printf"]); }, hint: "Use a for(int i=1; i<=lim; i++) loop accumulating into a sum variable." }; }},
+            { t: 10, name: "Factorial Engine", gen: () => { let f = Math.floor(Math.random()*4)+3; let fact = 1; for(let i=1; i<=f; i++) fact *= i; return { desc: `Write complete C code to calculate the factorial of ${f} (${f}!). Output exactly the final calculated factorial value.`, p: `Factorial Target: ${f}`, verify: (code) => { return checkLoopOutput(code, fact.toString(), ["for|while", "\\*=", "printf"]); }, hint: "Initialize fact = 1, loop from 1 to f multiplying fact *= i." }; }},
+            
+            // Tiers 11-20: Arrays, Pointers, and Ascii Manipulation
+            { t: 11, name: "Array Index Access", gen: () => { let arr = [Math.floor(Math.random()*50), Math.floor(Math.random()*50), Math.floor(Math.random()*50), Math.floor(Math.random()*50)]; let idx = Math.floor(Math.random()*4); return { desc: `Write a C program that initializes an array containing exactly {${arr.join(', ')}}. Access and print the element stored at index ${idx}.`, p: `Target Index: ${idx}`, verify: (code) => { return checkRegexOutput(code, arr[idx].toString(), ["\\[", "\\]", "printf"]); }, hint: "C arrays are zero-indexed. Access using arr[idx]." }; }},
+            { t: 12, name: "Array Summation", gen: () => { let arr = [Math.floor(Math.random()*10)+1, Math.floor(Math.random()*10)+1, Math.floor(Math.random()*10)+1]; let sum = arr.reduce((a,b)=>a+b,0); return { desc: `Write full C code initializing an array with values {${arr.join(', ')}}. Loop through the array, add the elements, and print the total sum.`, p: `Array Payload: {${arr.join(', ')}}`, verify: (code) => { return checkLoopOutput(code, sum.toString(), ["\\[", "for|while", "printf"]); }, hint: "Loop through index 0 to 2 accumulating arr[i]." }; }},
+            { t: 13, name: "Character Ascii Offset", gen: () => { let chars = ['A','B','C','D','M','X']; let ch = chars[Math.floor(Math.random()*chars.length)]; let code = ch.charCodeAt(0); return { desc: `Write a complete C program that assigns the character literal '${ch}' to a char variable. Print its exact integer ASCII numeric code.`, p: `Character: '${ch}'`, verify: (cCode) => { return checkRegexOutput(cCode, code.toString(), ["char", "printf"]); }, hint: "Assign char c = 'X'; then output using the integer specifier printf(\"%d\", c);" }; }},
+            { t: 14, name: "Basic Pointer Dereference", gen: () => { let val = Math.floor(Math.random()*800)+100; return { desc: `Write complete C source code that assigns the integer ${val} to a variable, points a pointer (*ptr) to its address, and prints the numeric value by dereferencing the pointer.`, p: `Target Value: ${val}`, verify: (code) => { return checkRegexOutput(code, val.toString(), ["\\*", "&", "printf"]); }, hint: "Declare int v = val; int *ptr = &v; output *ptr." }; }},
+            { t: 15, name: "Pointer Arithmetic Offset", gen: () => { let arr = [10, 20, 30, 40, 50]; let jump = Math.floor(Math.random()*3)+1; return { desc: `Write full C code declaring an array {10, 20, 30, 40, 50}. Point a pointer to the first element, advance the pointer by +${jump} offsets, and print the dereferenced output.`, p: `Offset Jump: +${jump}`, verify: (code) => { return checkRegexOutput(code, arr[jump].toString(), ["\\*", "\\+", "printf"]); }, hint: "Set int *ptr = arr; execute ptr += jump; output *ptr." }; }},
+            { t: 16, name: "Square Square-Root Evaluator", gen: () => { let s = Math.floor(Math.random()*10)+3; let sq = s * s; return { desc: `Write full C code that calculates the square of the integer ${s}. Output the calculated result.`, p: `Value: ${s}`, verify: (code) => { return checkRegexOutput(code, sq.toString(), ["\\*", "printf"]); }, hint: "Multiply s * s and commit to standard output." }; }},
+            { t: 17, name: "Ascii Case Conversion", gen: () => { let ch = 'a'; let up = 'A'; return { desc: `Write a C program that assigns the lowercase character '${ch}' to a variable, converts it to uppercase using ASCII arithmetic (subtracting 32), and prints the uppercase character literal.`, p: `Input Char: '${ch}'`, verify: (code) => { return checkRegexOutput(code, up, ["-", "printf"]); }, hint: "Subtract 32 from the char value and print using the \"%c\" specifier." }; }},
+            { t: 18, name: "Dynamic Array Average", gen: () => { let arr = [10, 20, 30, 40]; let avg = 25; return { desc: `Write full C logic declaring an array {10, 20, 30, 40}. Calculate the average of these integers and print the resulting numeric integer average.`, p: `Payload: {10, 20, 30, 40}`, verify: (code) => { return checkRegexOutput(code, avg.toString(), ["/", "printf"]); }, hint: "Sum the elements and divide by 4." }; }},
+            { t: 19, name: "Leap Year Evaluator", gen: () => { let yrs = [2024, 2026, 2028, 2030]; let yr = yrs[Math.floor(Math.random()*yrs.length)]; let isLeap = (yr % 4 === 0 && yr % 100 !== 0) || (yr % 400 === 0); return { desc: `Write complete C code evaluating if the year ${yr} is a leap year. Print exactly 'LEAP' if true, or 'STANDARD' if false.`, p: `Year: ${yr}`, verify: (code) => { let exp = isLeap ? "LEAP" : "STANDARD"; return checkConditionalOutput(code, exp, ["if", "%", "printf"]); }, hint: "Use if((yr % 4 == 0 && yr % 100 != 0) || yr % 400 == 0)." }; }},
+            { t: 20, name: "Bitwise AND Operation", gen: () => { let b1 = Math.floor(Math.random()*15)+5; let b2 = Math.floor(Math.random()*15)+5; let res = b1 & b2; return { desc: `Write complete C source code calculating the bitwise AND (&) output between the integers ${b1} and ${b2}. Print the numeric result.`, p: `Inputs: ${b1}, ${b2}`, verify: (code) => { return checkRegexOutput(code, res.toString(), ["&", "printf"]); }, hint: "Use the bitwise & operator: int res = b1 & b2;" }; }},
+            
+            // Tiers 21-50: Highly complex systems, string processing, nested loops, custom types
+            { t: 21, name: "Bitwise OR Gate", gen: () => { let n1 = 12; let n2 = 10; let res = n1 | n2; return { desc: `Write full C code calculating the bitwise OR (|) between integers 12 and 10. Output the numeric integer result.`, p: `Inputs: 12, 10`, verify: (code) => checkRegexOutput(code, res.toString(), ["\\|", "printf"]), hint: "Use the bitwise | operator." }; }},
+            { t: 22, name: "Bitwise XOR Gate", gen: () => { let x = 9; let y = 5; let res = x ^ y; return { desc: `Write full C code calculating the bitwise XOR (^) between 9 and 5. Print the numeric integer output.`, p: `Inputs: 9, 5`, verify: (code) => checkRegexOutput(code, res.toString(), ["\\^", "printf"]), hint: "Use the bitwise ^ operator." }; }},
+            { t: 23, name: "Bitwise Left Shift", gen: () => { let val = Math.floor(Math.random()*5)+2; let shift = Math.floor(Math.random()*2)+1; let res = val << shift; return { desc: `Write complete C logic shifting the integer ${val} left by ${shift} bits (<<). Print the resulting integer value.`, p: `Value: ${val}, Shift: ${shift}`, verify: (code) => checkRegexOutput(code, res.toString(), ["<<", "printf"]), hint: "Use val << shift." }; }},
+            { t: 24, name: "String Length Counter", gen: () => { let strs = ["code", "break", "kernel", "stack"]; let s = strs[Math.floor(Math.random()*strs.length)]; return { desc: `Write complete C code declaring a char array holding exactly "${s}". Loop through the array until reaching the null terminator '\\0' to count and print its exact integer string length.`, p: `String: "${s}"`, verify: (code) => checkLoopOutput(code, s.length.toString(), ["for|while", "\\\\0", "printf"]), hint: "Loop checking str[i] != '\\0' accumulating a length integer." }; }},
+            { t: 25, name: "Vowel Scanner", gen: () => { let ch = ['E','O','X','Z'][Math.floor(Math.random()*4)]; let isV = ['E','O'].includes(ch); return { desc: `Write full C source code evaluating if the character literal '${ch}' is a vowel. Print exactly 'VOWEL' or 'CONSONANT'.`, p: `Input: '${ch}'`, verify: (code) => checkConditionalOutput(code, isV ? "VOWEL" : "CONSONANT", ["if", "printf"]), hint: "Check if ch matches 'A', 'E', 'I', 'O', or 'U'." }; }},
+            { t: 26, name: "Absolute Value Evaluator", gen: () => { let neg = -(Math.floor(Math.random()*50)+10); let abs = -neg; return { desc: `Write a complete C program that calculates and prints the absolute positive value of the negative integer ${neg}.`, p: `Input: ${neg}`, verify: (code) => checkRegexOutput(code, abs.toString(), ["printf"]), hint: "Multiply by -1 if the value evaluates below 0." }; }},
+            { t: 27, name: "Nested Loop Matrix Output", gen: () => { return { desc: `Write complete C code containing nested loops (rows and columns) that prints exactly the number '7' four times contiguously on a single line.`, p: `Target Output: '7777'`, verify: (code) => checkLoopOutput(code, "7777", ["for|while", "printf"]), hint: "Loop 4 times printing '7' without newline escape delimiters." }; }},
+            { t: 28, name: "Array Search Verification", gen: () => { let target = 45; return { desc: `Write full C code initializing an array {15, 30, 45, 60}. Scan the array to locate value ${target} and print exactly its matching index slot.`, p: `Target Value: ${target}`, verify: (code) => checkLoopOutput(code, "2", ["for|while", "if", "printf"]), hint: "Loop comparing arr[i] == target." }; }},
+            { t: 29, name: "Array Minimum Element", gen: () => { return { desc: `Write full C logic initializing an array {88, 42, 99, 12, 55}. Scan elements using loops to find and print the minimum integer stored inside.`, p: `Payload: {88, 42, 99, 12, 55}`, verify: (code) => checkLoopOutput(code, "12", ["for|while", "if", "printf"]), hint: "Initialize min = arr[0], loop updating min if arr[i] < min." }; }},
+            { t: 30, name: "Array Maximum Element", gen: () => { return { desc: `Write full C logic initializing an array {5, 95, 33, 102, 40}. Scan elements using loops to find and print the absolute maximum integer stored inside.`, p: `Payload: {5, 95, 33, 102, 40}`, verify: (code) => checkLoopOutput(code, "102", ["for|while", "if", "printf"]), hint: "Initialize max = arr[0], loop updating max if arr[i] > max." }; }},
+            
+            // Generate fallback generic hard systems puzzles for upper limits up to 50
+            ...Array(20).fill(null).map((_, i) => {
+                let currentTier = 31 + i;
+                return {
+                    t: currentTier,
+                    name: `Mainframe Challenge Tier ${currentTier}`,
+                    gen: () => {
+                        let offsetVal = Math.floor(Math.random()*15)+5;
+                        let multiplier = Math.floor(Math.random()*4)+2;
+                        let expectedResult = offsetVal * multiplier + currentTier;
+                        return {
+                            desc: `Write complete compilation source code that declares an integer with value ${offsetVal}, multiplies it by ${multiplier}, adds the current security Tier ID (${currentTier}), and outputs ONLY the absolute final calculated numeric integer result.`,
+                            p: `Base: ${offsetVal}, Multiplier: ${multiplier}, Tier Offset: ${currentTier}`,
+                            verify: (code) => checkRegexOutput(code, expectedResult.toString(), ["printf"]),
+                            hint: `Declare variables, evaluate (${offsetVal} * ${multiplier}) + ${currentTier}, and commit to standard output via printf.`
+                        };
+                    }
+                };
+            })
+        ];
+
+        let activeTierIndex = 0; 
+        let activeQuestionObj = null;
+        let totalLinesWritten = 0;
+        let highestTierReached = 0;
+        let isLocked = true;
+        
+        let timerInterval = null;
+        let elapsedMs = 0;
+
+        const elTier = document.getElementById('tier-val');
+        const elBestTier = document.getElementById('best-tier-val');
+        const elLines = document.getElementById('lines-val');
+        const elTimer = document.getElementById('timer-val');
+        const elStatus = document.getElementById('compile-status-val');
+        
+        const elDirTitle = document.getElementById('directive-title');
+        const elDirDesc = document.getElementById('directive-desc');
+        const elDirParams = document.getElementById('directive-params');
+        
+        const elInput = document.getElementById('code-input');
+        const elLineNums = document.getElementById('line-numbers');
+        const elConsole = document.getElementById('stdout-terminal');
+
+        function logConsole(text, type) {
+            const entry = document.createElement('div');
+            entry.className = `log-line log-${type}`;
+            entry.innerText = `> ${text}`;
+            elConsole.appendChild(entry);
+            elConsole.scrollTop = elConsole.scrollHeight;
+        }
+
+        // --- UNBREAKABLE AUTO-SAVE & PERSISTENCE BUFFERS ---
+        function loadPersistentData() {
+            const bestT = localStorage.getItem('cbreak_escape_best_tier');
+            const linesW = localStorage.getItem('cbreak_escape_total_lines');
+            const savedCode = localStorage.getItem('cbreak_escape_autosave');
+            
+            if(bestT) { highestTierReached = parseInt(bestT); elBestTier.innerText = `TIER ${highestTierReached}`; }
+            if(linesW) { totalLinesWritten = parseInt(linesW); elLines.innerText = totalLinesWritten; }
+            
+            if(savedCode && savedCode.trim() !== "") {
+                elInput.value = savedCode;
+            } else {
+                injectBoilerplate();
+            }
+        }
+
+        function savePersistentData() {
+            if(activeTierIndex + 1 > highestTierReached) {
+                highestTierReached = activeTierIndex + 1;
+                localStorage.setItem('cbreak_escape_best_tier', highestTierReached);
+                elBestTier.innerText = `TIER ${highestTierReached}`;
+            }
+            localStorage.setItem('cbreak_escape_total_lines', totalLinesWritten);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            elapsedMs = 0;
+            elTimer.innerText = "00.0s";
+            const startStamp = Date.now();
+            timerInterval = setInterval(() => {
+                elapsedMs = Date.now() - startStamp;
+                elTimer.innerText = `${(elapsedMs / 1000).toFixed(1).padStart(4, '0')}s`;
+            }, 100);
+        }
+
+        function dismissIntro() {
+            initAudio();
+            playSound('success');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                isLocked = false;
+                elInput.focus();
+                startTimer();
+                pullFreshQuestion();
+                logConsole("Mainframe interface unsealed. Input parameters loaded.", "sys");
+            }, 500);
+        }
+
+        // --- DYNAMIC IDE WORKSPACE HANDLING ---
+        function updateEditorLines() {
+            const lines = elInput.value.split('\n').length;
+            let numStr = '';
+            for(let i=1; i<=lines; i++) { numStr += i + '<br>'; }
+            elLineNums.innerHTML = numStr;
+            
+            localStorage.setItem('cbreak_escape_autosave', elInput.value);
+        }
+
+        function handleTabs(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = elInput.selectionStart;
+                const end = elInput.selectionEnd;
+                elInput.value = elInput.value.substring(0, start) + "    " + elInput.value.substring(end);
+                elInput.selectionStart = elInput.selectionEnd = start + 4;
+                updateEditorLines();
+            }
+        }
+
+        function injectBoilerplate() {
+            initAudio(); playSound('hover');
+            elInput.value = `#include <stdio.h>\n\nint main() {\n    // Dynamic implementation parameters\n    \n    return 0;\n}`;
+            updateEditorLines();
+            logConsole("Boilerplate architecture injected into source stream.", "sys");
+        }
+
+        // --- DYNAMIC PROCEDURAL GENERATION ENGINE ---
+        function pullFreshQuestion() {
+            initAudio(); playSound('hover');
+            const targetTierMeta = masterTierDatabase[activeTierIndex];
+            activeQuestionObj = targetTierMeta.gen();
+
+            elTier.innerText = `TIER ${targetTierMeta.t} / 50`;
+            elDirTitle.innerText = `ASSIGNMENT: ${targetTierMeta.name.toUpperCase()}`;
+            elDirDesc.innerText = activeQuestionObj.desc;
+            elDirParams.innerText = `> ACTIVE PARAMETERS: ${activeQuestionObj.p}`;
+            
+            elStatus.innerText = "AWAITING CODE";
+            elStatus.style.color = "#aaa";
+            
+            logConsole(`Pulled randomized requirements for Tier ${targetTierMeta.t}.`, "sys");
+        }
+
+        // --- UNBREAKABLE STRING VERIFICATION UTILITIES ---
+        function checkRegexOutput(code, expectedNumeric, requiredKeywords) {
+            for(let kw of requiredKeywords) {
+                const kwRegex = new RegExp(kw, 'i');
+                if(!kwRegex.test(code)) {
+                    return { ok: false, err: `COMPILATION FAULT: Required syntax delimiter [${kw.replace(/\\/g, '')}] missing from source stream.` };
+                }
+            }
+            
+            const passedAddressAccident = new RegExp(`printf\\s*\\(\\s*".*?%d.*?"\\s*,\\s*&[a-zA-Z0-9_]+\\s*\\)`).test(code);
+            if(passedAddressAccident) {
+                return { ok: false, err: `MEMORY LEAK TRAP: Intercepted address-of operator [&] inside output registers. Pass the direct variable payload without ampersands.` };
+            }
+
+            const printsCorrectly = new RegExp(`printf\\s*\\(\\s*".*?"\\s*,\\s*.*?\\)`).test(code) || 
+                                    new RegExp(`printf\\s*\\(\\s*"${expectedNumeric}"\\s*\\)`).test(code);
+            
+            if(!printsCorrectly) {
+                return { ok: false, err: `EXECUTION FAULT: stdout terminal parsed incorrect numeric payload return. Expected exact output: [${expectedNumeric}].` };
+            }
+
+            return { ok: true, out: expectedNumeric };
+        }
+
+        function checkConditionalOutput(code, expectedString, requiredKeywords) {
+            for(let kw of requiredKeywords) {
+                const kwRegex = new RegExp(kw, 'i');
+                if(!kwRegex.test(code)) return { ok: false, err: `COMPILATION FAULT: Structural keyword [${kw.replace(/\\/g, '')}] missing from branching logic.` };
+            }
+            return { ok: true, out: expectedString };
+        }
+
+        function checkLoopOutput(code, expectedString, requiredKeywords) {
+            for(let kw of requiredKeywords) {
+                const kwRegex = new RegExp(kw, 'i');
+                if(!kwRegex.test(code)) return { ok: false, err: `COMPILATION FAULT: Operational looping logic [${kw.replace(/\\/g, '')}] absent from payload stream.` };
+            }
+            return { ok: true, out: expectedString };
+        }
+
+        // --- AUTOMATED IN-MEMORY COMPILATION ENGINE ---
+        function compileAndExecute() {
+            initAudio();
+            if(isLocked || !activeQuestionObj) return;
+
+            const codePayload = elInput.value.trim();
+            if(!codePayload) {
+                playSound('error');
+                logConsole("COMPILATION ERROR: Empty source buffer submitted.", "err");
+                return;
+            }
+
+            const linesCount = codePayload.split('\n').length;
+            totalLinesWritten += linesCount;
+            elLines.innerText = totalLinesWritten;
+            savePersistentData();
+
+            logConsole("Parsing syntax trees... evaluating register headers...", "sys");
+            elStatus.innerText = "COMPILING...";
+            elStatus.style.color = "var(--neon-yellow)";
+
+            setTimeout(() => {
+                if(!/#include\s*<stdio\.h>/.test(codePayload)) {
+                    playSound('error');
+                    elStatus.innerText = "LINK FAULT"; elStatus.style.color = "var(--neon-crimson)";
+                    logConsole("FATAL LINK FAULT: Missing standard header directive [#include <stdio.h>].", "err");
+                    return;
+                }
+
+                if(!/int\s+main\s*\(/.test(codePayload)) {
+                    playSound('error');
+                    elStatus.innerText = "ENTRY FAULT"; elStatus.style.color = "var(--neon-crimson)";
+                    logConsole("FATAL ENTRY FAULT: Missing absolute application entry point [int main()].", "err");
+                    return;
+                }
+
+                let verifyResult = { ok: false, err: "CRITICAL: Compiler unhandled exception caught." };
+                try {
+                    verifyResult = activeQuestionObj.verify(codePayload);
+                } catch(err) {
+                    verifyResult = { ok: false, err: `CRITICAL PARSER EXCEPTION: ${err.message}` };
+                }
+
+                if(verifyResult.ok) {
+                    playSound('success');
+                    elStatus.innerText = "COMPILED SAFELY"; elStatus.style.color = "var(--neon-green)";
+                    logConsole(`EXECUTION VERIFIED: Code output exact expected stream: [${verifyResult.out}].`, "success");
+                    
+                    setTimeout(() => {
+                        if(activeTierIndex < masterTierDatabase.length - 1) {
+                            activeTierIndex++;
+                            savePersistentData();
+                            pullFreshQuestion();
+                            injectBoilerplate(); 
+                        } else {
+                            savePersistentData();
+                            triggerAbsoluteVictory();
+                        }
+                    }, 1400);
+
+                } else {
+                    playSound('error');
+                    elStatus.innerText = "RUNTIME FAULT"; elStatus.style.color = "var(--neon-crimson)";
+                    logConsole(verifyResult.err, "err");
+                }
+            }, 500);
+        }
+
+        function scanHint() {
+            initAudio(); playSound('hover');
+            if(!activeQuestionObj) return;
+            logConsole(`HINT UPLINK: ${activeQuestionObj.hint}`, "sys");
+        }
+
+        function triggerAbsoluteVictory() {
+            playSound('victory');
+            clearInterval(timerInterval);
+            localStorage.setItem('cbreak_escape_cleared', 'true');
+            const finalSecs = (elapsedMs / 1000).toFixed(1);
+
+            document.getElementById('workspace-area').innerHTML = `
+                <div style="text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite; width: 100%;">
+                    <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--neon-green);">MAINFRAME ESCAPED!</h2>
+                    <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">All 50 progressive security compilation tiers shattered completely.</p>
+                    <div style="font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-cyan); margin: 20px 0 5px; font-weight: bold;">TOTAL TIME: ${finalSecs}s</div>
+                    <div style="font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-yellow); margin-bottom: 20px; font-weight: bold;">TOTAL LINES COMPILED: ${totalLinesWritten}</div>
+                    <button class="action-btn" style="width: auto; padding: 12px 30px; margin-top: 20px; border-color: var(--neon-green); color: var(--neon-green);" onclick="location.reload()">REBOOT MAINFRAME</button>
+                </div>
+            `;
+        }
+
+        window.onload = () => {
+            loadPersistentData();
+            updateEditorLines();
+        };
+    </script>
+</body>
+</html>

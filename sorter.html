@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Memory Bin Sorter</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-yellow: #ffbb00;
+            --neon-orange: #ff5500; /* MODULE IDENTITY COLOR */
+            --grid-color: rgba(255, 85, 0, 0.05);
+        }
+
+        body, html {
+            margin: 0; padding: 0; background-color: var(--bg-base); color: #fff;
+            font-family: 'Share Tech Mono', monospace; overflow-x: hidden; user-select: none;
+        }
+
+        /* --- CRT & GRID EFFECTS --- */
+        .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 85, 0, 0.05), rgba(0, 0, 0, 0), rgba(255, 85, 0, 0.05)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; opacity: 0.4; }
+        .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 85, 0, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); font-weight: 900; }
+        .return-btn { color: #fff; text-decoration: none; border: 1px solid var(--neon-orange); padding: 5px 15px; border-radius: 4px; transition: 0.3s; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; }
+        .return-btn:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 15px var(--neon-orange); }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1100px; margin: 100px auto 40px; padding: 20px; display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 25px; 
+        }
+
+        /* --- INTRO BRIEFING OVERLAY --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(25px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .intro-box {
+            max-width: 650px; text-align: center; border-color: var(--neon-orange);
+            box-shadow: 0 0 50px rgba(255, 85, 0, 0.2);
+        }
+
+        /* --- TELEMETRY SIDEBAR --- */
+        .telemetry-box { display: flex; flex-direction: column; gap: 20px; height: fit-content; }
+        .module-title { font-family: 'Orbitron'; color: var(--neon-orange); font-size: 1.4rem; margin: 0; text-shadow: 0 0 8px var(--neon-orange); }
+        .status-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .status-val { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: bold; }
+        
+        /* Timer Display */
+        .timer-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-orange); padding: 15px; border-radius: 6px; box-shadow: inset 0 0 10px rgba(255, 85, 0, 0.1); text-align: center; }
+        .timer-val { font-family: 'Orbitron'; font-size: 2.2rem; color: var(--neon-orange); font-weight: 900; text-shadow: 0 0 10px var(--neon-orange); margin-top: 5px; }
+
+        .action-btn { 
+            background: rgba(255, 85, 0, 0.1); border: 1px solid var(--neon-orange); color: var(--neon-orange); 
+            padding: 12px; font-family: 'Orbitron'; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px;
+        }
+        .action-btn:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 15px var(--neon-orange); }
+
+        /* --- WORKSPACE & BELT --- */
+        .workspace { display: flex; flex-direction: column; gap: 25px; }
+        
+        .conveyor-area { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; align-items: center; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .active-item-box { text-align: center; }
+        .item-display { 
+            font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; color: #fff; 
+            background: #000; border: 2px dashed var(--neon-orange); padding: 20px 10px; 
+            border-radius: 8px; box-shadow: 0 0 15px rgba(255, 85, 0, 0.2);
+            height: 60px; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .item-display.error-bounce { animation: gentleBounce 0.5s ease; border-color: var(--neon-pink); }
+        
+        /* Educational Concept Inspector */
+        .inspector-panel { background: rgba(255, 85, 0, 0.05); border-left: 3px solid var(--neon-orange); padding: 15px; border-radius: 4px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        .inspector-title { font-family: 'Orbitron'; font-size: 0.85rem; color: var(--neon-orange); margin-bottom: 8px; font-weight: bold; }
+        .inspector-text { font-size: 0.95rem; color: #ccc; line-height: 1.5; margin: 0; }
+
+        /* --- DESTINATION BINS --- */
+        .bins-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        
+        .bin { 
+            background: rgba(10, 15, 25, 0.8); border: 2px solid; border-radius: 8px; 
+            padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.3s ease;
+            display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+        }
+        .bin-int { border-color: #00f3ff; color: #00f3ff; }
+        .bin-float { border-color: #ffbb00; color: #ffbb00; }
+        .bin-char { border-color: #ff00ea; color: #ff00ea; }
+        .bin-syntax { border-color: #00ff66; color: #00ff66; }
+
+        .bin:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+        .bin-int:hover { box-shadow: 0 0 20px rgba(0,243,255,0.3); }
+        .bin-float:hover { box-shadow: 0 0 20px rgba(255,187,0,0.3); }
+        .bin-char:hover { box-shadow: 0 0 20px rgba(255,0,234,0.3); }
+        .bin-syntax:hover { box-shadow: 0 0 20px rgba(0,255,102,0.3); }
+
+        .bin-title { font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold; }
+        .bin-desc { font-size: 0.8rem; color: #aaa; }
+
+        @keyframes gentleBounce { 
+            0%, 100% { transform: translateX(0); } 
+            25% { transform: translateX(-10px); } 
+            75% { transform: translateX(10px); } 
+        }
+
+        @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <a href="index.html" class="return-btn">RETURN TO HUB</a>
+    </nav>
+
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="glass-panel intro-box">
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-orange); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-orange);">MEMORY BIN v2.0</h1>
+            <div class="status-label" style="display: inline-block; border: 1px solid var(--neon-orange); padding: 4px 12px; border-radius: 4px; color: var(--neon-orange); margin-bottom: 20px;">OPERATOR BRIEFING</div>
+            
+            <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
+                Welcome to the compiler ingestion buffer. Raw data payloads and syntactic fragments are streaming along the conveyor belt. Your directive is to inspect and sort each payload into its correct native memory register.
+            </p>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-cyan); margin-bottom: 25px;">
+                <div style="color: var(--neon-cyan); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">TACTICAL PARAMETERS:</div>
+                <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.95rem; line-height: 1.8;">
+                    <li><strong style="color: #fff;">Inspect Concept:</strong> Click the inspect toggle to reveal memory size rules and syntax definitions penalty-free.</li>
+                    <li><strong style="color: #fff;">Route Payloads:</strong> Click the appropriate bin (int, float, char, or Syntax) to commit the active block.</li>
+                    <li><strong style="color: #fff;">Fastest Time:</strong> Complete all 10 assignments as quickly as possible to log a new system record.</li>
+                </ul>
+            </div>
+
+            <button class="action-btn" style="width: auto; padding: 12px 40px; margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE ASSIGNMENT</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="glass-panel telemetry-box">
+            <h2 class="module-title">MEMORY BIN</h2>
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0;">Beginner Concept Recognition.</p>
+            
+            <hr style="width: 100%; border-color: rgba(255,255,255,0.1); margin: 0;">
+
+            <div class="timer-box">
+                <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon-orange); font-weight: bold;">SESSION ELAPSED TIME</div>
+                <div class="timer-val" id="timer-val">00.0s</div>
+            </div>
+
+            <div>
+                <div class="status-label">FASTEST RECORD</div>
+                <div class="status-val" id="best-val" style="color: var(--neon-green);">--</div>
+            </div>
+
+            <div>
+                <div class="status-label">BUFFER SORTED</div>
+                <div class="status-val" id="progress-val" style="color: var(--neon-orange);">0 / 10</div>
+            </div>
+
+            <button class="action-btn" onclick="location.reload()" onmouseenter="playSound('hover')">REBOOT MODULE</button>
+        </div>
+
+        <div class="glass-panel workspace" id="workspace-area">
+            
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                <div style="color: var(--neon-orange); font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold;">CONVEYOR BUFFER</div>
+                <div style="font-size: 0.85rem; color: #aaa; margin-top: 5px;">Inspect the active data block and route it to its proper native bin.</div>
+            </div>
+
+            <div class="conveyor-area">
+                <div class="active-item-box">
+                    <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px; font-family: 'Orbitron';">ACTIVE PAYLOAD</div>
+                    <div class="item-display" id="item-display">--</div>
+                    <button class="action-btn" style="padding: 6px; font-size: 0.8rem; margin-top: 10px; background: transparent;" onclick="inspectCurrentItem()" onmouseenter="playSound('hover')">🔍 INSPECT CONCEPT</button>
+                </div>
+
+                <div class="inspector-panel" id="inspector-panel">
+                    <div class="inspector-title" id="inspector-title">CONCEPT INSPECTOR</div>
+                    <p class="inspector-text" id="inspector-text">Awaiting operational briefing clearance to launch data payload stream.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px; font-family: 'Orbitron'; text-align: center;">CLICK BIN TO ASSIGN ACTIVE PAYLOAD</div>
+                <div class="bins-grid">
+                    
+                    <div class="bin bin-int" onclick="assignToBin('int')" onmouseenter="playSound('hover')">
+                        <div class="bin-title">int</div>
+                        <div class="bin-desc">Whole integers with no decimal points.</div>
+                    </div>
+
+                    <div class="bin bin-float" onclick="assignToBin('float')" onmouseenter="playSound('hover')">
+                        <div class="bin-title">float</div>
+                        <div class="bin-desc">Numbers containing a decimal precision point.</div>
+                    </div>
+
+                    <div class="bin bin-char" onclick="assignToBin('char')" onmouseenter="playSound('hover')">
+                        <div class="bin-title">char</div>
+                        <div class="bin-desc">Single ASCII characters enclosed in single quotes.</div>
+                    </div>
+
+                    <div class="bin bin-syntax" onclick="assignToBin('syntax')" onmouseenter="playSound('hover')">
+                        <div class="bin-title">Syntax</div>
+                        <div class="bin-desc">Structural keywords, operators, comments, and delimiters.</div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // --- NATIVE AUDIO ENGINE ---
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playSound(type) {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'hover') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'success') { osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.exponentialRampToValueAtTime(1000, now + 0.15); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'victory') { 
+                const freqs = [440, 554.37, 659.25, 880];
+                freqs.forEach((freq, i) => {
+                    const vOsc = audioCtx.createOscillator(); const vGain = audioCtx.createGain();
+                    vOsc.type = 'square'; vOsc.frequency.value = freq;
+                    vOsc.connect(vGain); vGain.connect(audioCtx.destination);
+                    vGain.gain.setValueAtTime(0, now + i * 0.15); vGain.gain.linearRampToValueAtTime(0.1, now + i * 0.15 + 0.05); vGain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.4);
+                    vOsc.start(now + i * 0.15); vOsc.stop(now + i * 0.15 + 0.4);
+                });
+            }
+        }
+
+        // --- MASSIVE 50-ITEM EDUCATIONAL DATABASE ---
+        const masterDatabase = [
+            { payload: "42", type: "int", def: "A standard positive integer. Whole numbers consume 4 bytes of memory." },
+            { payload: "-15", type: "int", def: "A signed negative integer. Evaluated without any floating-point components." },
+            { payload: "0", type: "int", def: "Zero evaluates as an integer natively. It is also used as a boolean 'false' condition." },
+            { payload: "8192", type: "int", def: "A standard whole number occupying native CPU register boundaries." },
+            { payload: "-999", type: "int", def: "Signed integers can represent negative boundaries down to -2 billion." },
+            { payload: "1024", type: "int", def: "Common binary boundary value. Stored natively as an integer type." },
+            { payload: "7", type: "int", def: "A basic single-digit integer. Consumes no decimal overhead." },
+            { payload: "65536", type: "int", def: "Classic 16-bit boundary overflow limit. Evaluated as a standard int." },
+            { payload: "-1", type: "int", def: "Often returned by functions to signal an operational error or EOF." },
+            { payload: "256", type: "int", def: "The exact number of values configurable inside a single byte." },
+            { payload: "3.14", type: "float", def: "A standard floating-point decimal. Requires an IEEE 754 floating-point representation." },
+            { payload: "-0.005", type: "float", def: "Decimals can track highly precise fractional sub-zero values." },
+            { payload: "99.9", type: "float", def: "Any number containing a direct period delimiter defaults to a floating type." },
+            { payload: "0.0", type: "float", def: "Even if mathematically zero, the explicit period forces allocation as a float." },
+            { payload: "1.618", type: "float", def: "The golden ratio. Highly precise fractional values require decimal allocation." },
+            { payload: "-273.15", type: "float", def: "Absolute zero. Handled natively via floating-point registers." },
+            { payload: "10.0f", type: "float", def: "The trailing 'f' explicitly casts the literal constant as a single-precision float." },
+            { payload: "0.333", type: "float", def: "Fractions cannot be evaluated cleanly inside standard integer registers." },
+            { payload: "50.5", type: "float", def: "Standard decimal representation. Prone to minor precision rounding." },
+            { payload: "-9.81", type: "float", def: "Gravitational acceleration. Required when executing real-time physics." },
+            { payload: "'A'", type: "char", def: "A single ASCII letter enclosed in single quotes. Stored exactly as the integer 65." },
+            { payload: "'z'", type: "char", def: "Characters occupy exactly 1 byte (8 bits) of memory." },
+            { payload: "'9'", type: "char", def: "This is the character literal '9', NOT the integer 9. It shares an ASCII value of 57." },
+            { payload: "'\\n'", type: "char", def: "The newline escape sequence. Evaluates as a single ASCII character (value 10)." },
+            { payload: "'$'", type: "char", def: "Symbols enclosed in single quotes are mapped directly to their byte representation." },
+            { payload: "' '", type: "char", def: "A space is not empty—it is a valid ASCII character literal mapped to the integer 32." },
+            { payload: "'\\0'", type: "char", def: "The null terminator. Used natively to mark the end of character array strings." },
+            { payload: "'X'", type: "char", def: "Single alphabetic byte. Stored directly in memory as an integer code." },
+            { payload: "'?'", type: "char", def: "Standard ASCII punctuation token evaluated as a 1-byte character literal." },
+            { payload: "'0'", type: "char", def: "Character zero. Occupies the ASCII integer slot 48 inside memory." },
+            { payload: "// note", type: "syntax", def: "A single-line comment. Completely ignored by the preprocessor during compilation." },
+            { payload: "return;", type: "syntax", def: "A keyword command deployed to immediately terminate an active execution frame." },
+            { payload: ";", type: "syntax", def: "The statement terminator. Omitting this causes immediate, catastrophic compile errors." },
+            { payload: "sizeof()", type: "syntax", def: "A native compile-time operator used to evaluate the byte size of a variable or type." },
+            { payload: "++", type: "syntax", def: "The increment operator. Adds exactly 1 to an integer or advances a pointer offset." },
+            { payload: "==", type: "syntax", def: "The equality comparator. Do not confuse this with the assignment operator (=)." },
+            { payload: "/* ... */", type: "syntax", def: "A multi-line comment block deployed to document architecture or disable raw segments." },
+            { payload: "while()", type: "syntax", def: "A core control loop keyword used to repeat logic while conditions remain true." },
+            { payload: "#include", type: "syntax", def: "A preprocessor directive telling the compiler to import external library headers." },
+            { payload: "{}", type: "syntax", def: "Scope delimiters. Used to group statements into isolated local execution frames." },
+            { payload: "&&", type: "syntax", def: "The logical AND gate. Requires both flanking conditions to evaluate as true." },
+            { payload: "||", type: "syntax", def: "The logical OR gate. Evaluates as true if either flanking condition is satisfied." },
+            { payload: "!=", type: "syntax", def: "The inequality operator. Evaluates as true if two targeted payloads do not match." },
+            { payload: "&", type: "syntax", def: "The address-of operator. Extracts the direct RAM memory location of a variable." },
+            { payload: "*", type: "syntax", def: "The dereference operator. Reaches inside a memory pointer to read its payload." },
+            { payload: "struct", type: "syntax", def: "A keyword used to group disparate native variables into a custom, unified block." },
+            { payload: "if()", type: "syntax", def: "A primary conditional branching keyword directing the execution stream." },
+            { payload: "break;", type: "syntax", def: "A flow control command that forcibly ejects execution from an active loop or switch." },
+            { payload: "main()", type: "syntax", def: "The primary root entry point mandatory in every executable C application." },
+            { payload: "void", type: "syntax", def: "A keyword designating an empty data type or signaling that a function returns no value." }
+        ];
+
+        let currentBuffer = [];
+        let currentIndex = 0;
+        let timerInterval = null;
+        let elapsedMilliseconds = 0;
+        let isProcessing = true; // Safely locked until briefing is formally dismissed
+
+        const elDisplay = document.getElementById('item-display');
+        const elTitle = document.getElementById('inspector-title');
+        const elText = document.getElementById('inspector-text');
+        const elTimer = document.getElementById('timer-val');
+        const elBest = document.getElementById('best-val');
+        const elProgress = document.getElementById('progress-val');
+
+        function getRandomSubset(array, count) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // --- DISMISS BRIEFING & INITIALIZE SESSION ---
+        function dismissIntro() {
+            initAudio();
+            playSound('success');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                startSession();
+            }, 500);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            elapsedMilliseconds = 0;
+            elTimer.innerText = "00.0s";
+            
+            const startTime = Date.now();
+            timerInterval = setInterval(() => {
+                elapsedMilliseconds = Date.now() - startTime;
+                const seconds = (elapsedMilliseconds / 1000).toFixed(1);
+                elTimer.innerText = `${seconds.padStart(4, '0')}s`;
+            }, 100);
+        }
+
+        function stopTimer() { clearInterval(timerInterval); }
+
+        function loadPersonalBest() {
+            const bestTime = localStorage.getItem('cbreak_sorter_best');
+            if (bestTime) { elBest.innerText = `${parseFloat(bestTime).toFixed(1)}s`; } 
+            else { elBest.innerText = "--"; }
+        }
+
+        function startSession() {
+            isProcessing = false; // Disengage safety lock
+            currentIndex = 0;
+            currentBuffer = getRandomSubset(masterDatabase, 10);
+            updateTelemetry();
+            startTimer();
+            presentActiveItem();
+        }
+
+        function presentActiveItem() {
+            if (currentIndex < currentBuffer.length) {
+                const item = currentBuffer[currentIndex];
+                elDisplay.innerText = item.payload;
+                elDisplay.classList.remove('error-bounce');
+                elTitle.innerText = "CONCEPT INSPECTOR";
+                elTitle.style.color = "var(--neon-orange)";
+                elText.innerText = "Click '🔍 INSPECT CONCEPT' to review the memory alignment rules before assigning this payload.";
+            } else {
+                stopTimer();
+                triggerVictory();
+            }
+        }
+
+        function inspectCurrentItem() {
+            initAudio();
+            if (currentIndex >= currentBuffer.length || isProcessing) return;
+            playSound('hover');
+            const item = currentBuffer[currentIndex];
+            elTitle.innerText = `TYPE: ${item.type.toUpperCase()}`;
+            elTitle.style.color = "var(--neon-orange)";
+            elText.innerText = item.def;
+        }
+
+        function assignToBin(targetType) {
+            initAudio();
+            if (currentIndex >= currentBuffer.length || isProcessing) return;
+            const currentItem = currentBuffer[currentIndex];
+
+            if (currentItem.type === targetType) {
+                isProcessing = true; // Engage execution lock mid-transition
+                playSound('success');
+                elTitle.innerText = "ROUTE VERIFIED";
+                elTitle.style.color = "var(--neon-green)";
+                elText.innerText = `Correct! [${currentItem.payload}] successfully routed to the ${targetType} register.`;
+                
+                currentIndex++;
+                updateTelemetry();
+
+                setTimeout(() => {
+                    isProcessing = false;
+                    presentActiveItem();
+                }, 600);
+            } else {
+                playSound('error');
+                elDisplay.classList.remove('error-bounce');
+                void elDisplay.offsetWidth; 
+                elDisplay.classList.add('error-bounce');
+                elTitle.innerText = "ROUTING ERROR";
+                elTitle.style.color = "var(--neon-pink)";
+                elText.innerText = `Mismatch! [${currentItem.payload}] belongs in the ${currentItem.type.toUpperCase()} bin. \n\nRule: ${currentItem.def}`;
+            }
+        }
+
+        function updateTelemetry() { elProgress.innerText = `${currentIndex} / 10`; }
+
+        function triggerVictory() {
+            playSound('victory');
+            const finalSeconds = (elapsedMilliseconds / 1000).toFixed(1);
+            const oldBest = localStorage.getItem('cbreak_sorter_best');
+            let recordText = "";
+
+            if (!oldBest || parseFloat(finalSeconds) < parseFloat(oldBest)) {
+                localStorage.setItem('cbreak_sorter_best', finalSeconds);
+                recordText = `<div style="color: var(--neon-orange); font-family: 'Orbitron'; font-size: 1.1rem; margin-top: 10px; animation: flashVictory 1s infinite;">🏆 NEW PERSONAL FASTEST RECORD!</div>`;
+                loadPersonalBest();
+            }
+
+            const workspace = document.getElementById('workspace-area');
+            workspace.innerHTML = `
+                <div style="text-align: center; padding: 50px 20px; background: rgba(0, 255, 102, 0.1); border: 2px dashed var(--neon-green); border-radius: 12px; animation: flashVictory 2s infinite;">
+                    <h2 style="font-family: 'Orbitron'; color: var(--neon-green); font-size: 2.5rem; margin: 0; text-shadow: 0 0 15px var(--neon-green);">BUFFER SANITIZED!</h2>
+                    <p style="color: #ccc; font-size: 1.1rem; margin-top: 10px;">All 10 raw concepts routed perfectly without memory faults.</p>
+                    <div style="font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-orange); margin: 20px 0; font-weight: bold;">SORTING TIME: ${finalSeconds}s</div>
+                    ${recordText}
+                    <button class="action-btn" style="width: auto; padding: 12px 30px; margin-top: 25px;" onclick="location.reload()">REBOOT MODULE</button>
+                </div>
+            `;
+        }
+
+        // Initialize personal best on load, but defer stream launch until modal dismissal
+        window.onload = () => {
+            loadPersonalBest();
+        };
+    </script>
+</body>
+</html>

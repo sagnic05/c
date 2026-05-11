@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-BREAK OS | Syntax Crush</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg-base: #050508;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #00ff66;
+            --neon-yellow: #ffbb00;
+            --neon-orange: #ff5500;
+            --grid-color: rgba(255, 0, 234, 0.05);
+        }
+
+        body, html {
+            margin: 0; padding: 0; background-color: var(--bg-base); color: #fff;
+            font-family: 'Share Tech Mono', monospace; overflow-x: hidden; user-select: none;
+        }
+
+        /* --- CRT & GRID EFFECTS --- */
+        .scanlines { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 234, 0.05), transparent, rgba(255, 0, 234, 0.05)); pointer-events: none; z-index: 999; opacity: 0.4; }
+        .cyber-grid { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px); background-size: 50px 50px; z-index: -1; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 10s linear infinite; }
+        @keyframes gridMove { 0% { background-position: 0 0; } 100% { background-position: 0 50px; } }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 0, 234, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; }
+        .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-weight: 900; }
+        .return-btn { color: #fff; text-decoration: none; border: 1px solid var(--neon-pink); padding: 5px 15px; border-radius: 4px; transition: 0.3s; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; }
+        .return-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink); }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1150px; margin: 100px auto 40px; padding: 20px; display: grid; grid-template-columns: 320px 1fr; gap: 30px; }
+        
+        .glass-panel { 
+            background: rgba(20, 25, 40, 0.4); backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 25px; 
+        }
+
+        /* --- INTRO BRIEFING OVERLAY --- */
+        .intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(25px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .intro-box {
+            max-width: 650px; text-align: center; border-color: var(--neon-pink);
+            box-shadow: 0 0 50px rgba(255, 0, 234, 0.2);
+        }
+
+        /* --- TELEMETRY SIDEBAR --- */
+        .telemetry-box { display: flex; flex-direction: column; gap: 20px; height: fit-content; }
+        .module-title { font-family: 'Orbitron'; color: var(--neon-pink); font-size: 1.4rem; margin: 0; text-shadow: 0 0 8px var(--neon-pink); }
+        .status-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        .status-val { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: bold; }
+        
+        /* Byte Accumulator */
+        .byte-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan); padding: 15px; border-radius: 6px; box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.1); text-align: center; }
+        .byte-val { font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-cyan); font-weight: 900; text-shadow: 0 0 10px var(--neon-cyan); margin-top: 5px; }
+
+        .action-btn { 
+            background: rgba(255, 0, 234, 0.1); border: 1px solid var(--neon-pink); color: var(--neon-pink); 
+            padding: 12px; font-family: 'Orbitron'; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px;
+        }
+        .action-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 15px var(--neon-pink); }
+
+        /* --- WORKSPACE --- */
+        .workspace { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+        
+        /* Target Mission Directive Panel */
+        .mission-panel {
+            width: 100%; background: rgba(0, 255, 102, 0.05); border: 1px solid var(--neon-green);
+            border-left: 5px solid var(--neon-green); padding: 15px 20px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;
+            box-shadow: inset 0 0 15px rgba(0, 255, 102, 0.1);
+        }
+        .mission-title { font-family: 'Orbitron'; color: var(--neon-green); font-size: 1rem; font-weight: bold; }
+        .mission-text { font-size: 1.1rem; color: #fff; font-weight: bold; margin-top: 5px; }
+        .mission-progress { font-family: 'Orbitron'; font-size: 1.6rem; color: var(--neon-green); font-weight: bold; text-shadow: 0 0 8px var(--neon-green); }
+
+        /* Inspection Display Panel */
+        .inspector-panel {
+            width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 3px solid var(--neon-cyan); padding: 12px 15px; border-radius: 8px;
+            display: flex; gap: 15px; align-items: center; box-sizing: border-box;
+        }
+        .preview-box {
+            width: 55px; height: 55px; border-radius: 8px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; font-family: 'Orbitron'; font-weight: bold;
+            border: 2px solid #555; background: #111;
+        }
+        .inspector-details { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .type-heading { font-family: 'Orbitron'; color: var(--neon-cyan); font-size: 1rem; font-weight: bold; }
+        .type-desc { font-size: 0.85rem; color: #ccc; line-height: 1.4; }
+
+        .grid-wrapper {
+            background: #000; padding: 10px; border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 0, 234, 0.15);
+            position: relative; overflow: hidden;
+        }
+
+        .board {
+            display: grid; grid-template-columns: repeat(8, 55px); grid-template-rows: repeat(8, 55px);
+            gap: 6px; background: rgba(10, 15, 25, 0.8); padding: 6px; border-radius: 8px;
+        }
+
+        .token {
+            width: 55px; height: 55px; border-radius: 8px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; cursor: pointer; font-family: 'Orbitron';
+            font-weight: bold; box-sizing: border-box; transition: transform 0.15s ease, filter 0.2s;
+            position: relative; border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .token:hover { transform: scale(1.08); z-index: 10; }
+        .token.selected { transform: scale(1.15); z-index: 20; border-color: #fff; box-shadow: 0 0 15px #fff; }
+
+        /* Distinct Memory Type Themes */
+        .token-int { background: rgba(0, 243, 255, 0.2); border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: inset 0 0 10px rgba(0,243,255,0.3); }
+        .token-float { background: rgba(255, 187, 0, 0.2); border-color: var(--neon-yellow); color: var(--neon-yellow); box-shadow: inset 0 0 10px rgba(255,187,0,0.3); }
+        .token-char { background: rgba(255, 0, 234, 0.2); border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: inset 0 0 10px rgba(255,0,234,0.3); }
+        .token-ptr { background: rgba(0, 255, 102, 0.2); border-color: var(--neon-green); color: var(--neon-green); box-shadow: inset 0 0 10px rgba(0,255,102,0.3); }
+        .token-void { background: rgba(255, 85, 0, 0.2); border-color: var(--neon-orange); color: var(--neon-orange); box-shadow: inset 0 0 10px rgba(255,85,0,0.3); }
+
+        /* Memory Leak Hazard Token */
+        .token-leak { background: rgba(255, 0, 0, 0.3); border-color: #ff3333; color: #ff3333; box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.5); animation: pulseLeak 1s infinite alternate; }
+        @keyframes pulseLeak { 0% { border-color: #ff3333; } 100% { border-color: #fff; box-shadow: 0 0 10px #ff3333; } }
+
+        /* Special Power-Up Token */
+        .token.blaster { animation: pulseBlaster 0.8s infinite alternate; border-width: 3px; }
+        @keyframes pulseBlaster { 0% { filter: brightness(1); } 100% { filter: brightness(1.8); box-shadow: 0 0 15px #fff; } }
+
+        .lbl-type { font-size: 1rem; pointer-events: none; }
+        .lbl-size { font-size: 0.6rem; opacity: 0.8; font-family: 'Share Tech Mono'; margin-top: 2px; pointer-events: none; }
+
+        /* Educational Decryption Log */
+        .terminal-log {
+            width: 100%; background: #000; border: 1px solid #333; border-left: 3px solid var(--neon-pink);
+            padding: 12px 15px; border-radius: 4px; height: 80px; overflow-y: auto; font-size: 0.9rem;
+            display: flex; flex-direction: column; gap: 4px; box-sizing: border-box;
+        }
+        .log-line { margin: 0; }
+        .log-sys { color: #888; }
+        .log-match { color: var(--neon-green); font-family: 'Orbitron'; font-weight: bold; }
+        .log-combo { color: var(--neon-yellow); font-weight: bold; }
+        .log-directive { color: #00f3ff; font-weight: bold; }
+
+        .crush-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+    </style>
+</head>
+<body onclick="initAudio()">
+
+    <div class="scanlines"></div>
+    <div class="cyber-grid"></div>
+
+    <nav>
+        <div class="nav-logo">C-BREAK OS</div>
+        <a href="index.html" class="return-btn">RETURN TO HUB</a>
+    </nav>
+
+    <div id="intro-overlay" class="intro-overlay">
+        <div class="glass-panel intro-box">
+            <h1 style="font-family: 'Orbitron'; color: var(--neon-pink); font-size: 2.5rem; margin-top: 0; text-shadow: 0 0 15px var(--neon-pink);">SYNTAX CRUSH v4.0</h1>
+            <div class="status-label" style="display: inline-block; border: 1px solid var(--neon-pink); padding: 4px 12px; border-radius: 4px; color: var(--neon-pink); margin-bottom: 20px;">ALLOCATION QUOTA ENGINE</div>
+            
+            <p style="color: #ccc; font-size: 1.05rem; line-height: 1.6; text-align: left; margin-bottom: 20px;">
+                Welcome to the target memory allocation grid. To make successful compilation sequences, operators must complete tailored buffer requests and sanitize critical memory hazards.
+            </p>
+
+            <div style="text-align: left; background: rgba(0,0,0,0.6); padding: 18px; border-radius: 6px; border-left: 3px solid var(--neon-green); margin-bottom: 25px;">
+                <div style="color: var(--neon-green); font-family: 'Orbitron'; font-weight: bold; font-size: 0.95rem; margin-bottom: 10px;">TACTICAL DIRECTIVES:</div>
+                <ul style="margin: 0; padding-left: 20px; color: #aaa; font-size: 0.95rem; line-height: 1.8;">
+                    <li><strong style="color: #fff;">Target Quotas:</strong> Follow the active directive panel. Fulfill specific byte quotas for targeted C types to clear stages.</li>
+                    <li><strong style="color: #ff3333;">Sanitize Leaks:</strong> Corrupted <code style="color: #ff3333;">⚠️ LEAK</code> blocks cannot be swapped directly. Match an adjacent <strong style="color: var(--neon-green);">PTR</strong> block to <code style="color: var(--neon-green);">free()</code> them safely.</li>
+                    <li><strong style="color: #fff;">Inspect Concepts:</strong> Click any grid element to verify its specific architecture and size boundaries.</li>
+                </ul>
+            </div>
+
+            <button class="action-btn" style="width: auto; padding: 12px 40px; margin-top: 0;" onclick="dismissIntro()" onmouseenter="playSound('hover')">INITIALIZE CRUSH DECK</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="glass-panel telemetry-box">
+            <h2 class="module-title">SYNTAX CRUSH</h2>
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0;">Targeted Byte Allocation.</p>
+            
+            <hr style="width: 100%; border-color: rgba(255,255,255,0.1); margin: 0;">
+
+            <div class="byte-box">
+                <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--neon-cyan); font-weight: bold;">TOTAL BYTES COMMITTED</div>
+                <div class="byte-val" id="bytes-val">0 B</div>
+            </div>
+
+            <div>
+                <div class="status-label">ACTIVE MISSION STAGE</div>
+                <div class="status-val" id="stage-val" style="color: var(--neon-green);">TIER 1</div>
+            </div>
+
+            <div>
+                <div class="status-label">HIGHEST SCORE</div>
+                <div class="status-val" id="best-val" style="color: var(--neon-yellow);">0</div>
+            </div>
+
+            <div>
+                <div class="status-label">CURRENT SCORE</div>
+                <div class="status-val" id="score-val" style="color: var(--neon-pink);">0</div>
+            </div>
+
+            <div>
+                <div class="status-label">MOVES COMMITTED</div>
+                <div class="status-val" id="moves-val" style="color: #aaa;">0</div>
+            </div>
+
+            <button class="action-btn" onclick="initBoard()" onmouseenter="playSound('hover')">REBOOT BUFFER</button>
+        </div>
+
+        <div class="glass-panel workspace">
+            
+            <div class="mission-panel">
+                <div>
+                    <div class="mission-title" id="mission-lbl">MISSION DIRECTIVE</div>
+                    <div class="mission-text" id="mission-text">Allocate an Integer Buffer (24 Bytes)</div>
+                </div>
+                <div class="mission-progress" id="mission-progress">0 / 24 B</div>
+            </div>
+
+            <div class="inspector-panel">
+                <div class="preview-box" id="preview-box">
+                    <span style="font-size: 0.6rem; color: #777;">SELECT</span>
+                </div>
+                <div class="inspector-details">
+                    <div class="type-heading" id="preview-title">DATA INSPECTOR</div>
+                    <div class="type-desc" id="preview-desc">Click any data token on the grid to immediately pull its C architecture definitions into this buffer.</div>
+                </div>
+                <button class="action-btn" style="width: auto; padding: 8px 15px; margin: 0; font-size: 0.8rem;" onclick="hintMove()" onmouseenter="playSound('hover')">🔍 SCAN HINT</button>
+            </div>
+
+            <div class="grid-wrapper">
+                <div class="board" id="board">
+                    </div>
+                <div class="crush-overlay" id="overlay"></div>
+            </div>
+
+            <div class="terminal-log" id="terminal-log">
+                <div class="log-line log-sys">> Uplink established. Mission Directives initialized.</div>
+                <div class="log-line log-sys">> Target specific types to satisfy operational quotas...</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // --- NATIVE AUDIO ENGINE ---
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
+
+        function playSound(type) {
+            if(!audioCtx || audioCtx.state === 'suspended') return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (type === 'hover') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.01, now); gain.gain.linearRampToValueAtTime(0, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'select') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+            else if (type === 'crush') { osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(800, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'blaster') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(600, now + 0.4); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4); osc.start(now); osc.stop(now + 0.4); }
+            else if (type === 'error') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+            else if (type === 'level') { osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.5); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.5); osc.start(now); osc.stop(now + 0.5); }
+        }
+
+        // --- GAME CONFIG & DATA TYPES ---
+        const width = 8;
+        const types = [
+            { name: "int", bytes: 4, lbl: "INT", color: "#00f3ff", desc: "Integer numeric variable. Consumes exactly 4 bytes of memory stack. Used for whole numeric processing." },
+            { name: "float", bytes: 4, lbl: "FLT", color: "#ffbb00", desc: "Floating-point numeric decimal. Requires IEEE 754 precision configuration. Allocates 4 bytes." },
+            { name: "char", bytes: 1, lbl: "CHR", color: "#ff00ea", desc: "Single ASCII character enclosed in single quotes. Extremely lightweight, occupying exactly 1 byte." },
+            { name: "ptr", bytes: 8, lbl: "PTR", color: "#00ff66", desc: "Memory address pointer (*ptr). Stores direct RAM coordinates rather than standard payload data. Occupies 8 bytes." },
+            { name: "void", bytes: 0, lbl: "NOD", color: "#ff5500", desc: "Void keyword designating an empty data return type or a null structural reference. Commits 0 bytes." }
+        ];
+
+        const hazardLeak = { name: "leak", bytes: 0, lbl: "⚠️", color: "#ff3333", desc: "CRITICAL HAZARD: Memory Leak. Un-matchable block blocking heap slots. Must be cleared by matching an adjacent PTR block to trigger free()." };
+
+        // --- STRUCTURED CONCEPT MISSIONS ---
+        const missions = [
+            { id: 1, targetType: "int", targetCount: 24, text: "Allocate an Integer Array (24 Bytes)", unit: "B", calc: (cnt, bytes) => bytes },
+            { id: 2, targetType: "char", targetCount: 8, text: "Form a String Buffer (8 Characters)", unit: "CHR", calc: (cnt, bytes) => cnt },
+            { id: 3, targetType: "ptr", targetCount: 32, text: "Stack Address Pointers (32 Bytes)", unit: "B", calc: (cnt, bytes) => bytes },
+            { id: 4, targetType: "leak", targetCount: 3, text: "Sanitize Dangling Pointers (Free 3 Leaks)", unit: "LEAK", calc: (cnt, bytes) => cnt }
+        ];
+
+        let currentStage = 0;
+        let missionProgress = 0;
+        let grid = [];
+        let score = 0;
+        let moves = 0;
+        let totalBytes = 0;
+        let firstSelected = null;
+        let isProcessing = true; // Locked until dismissal
+
+        const elBoard = document.getElementById('board');
+        const elScore = document.getElementById('score-val');
+        const elBest = document.getElementById('best-val');
+        const elMoves = document.getElementById('moves-val');
+        const elBytes = document.getElementById('bytes-val');
+        const elStage = document.getElementById('stage-val');
+        const elLog = document.getElementById('terminal-log');
+
+        const elMissionText = document.getElementById('mission-text');
+        const elMissionProgress = document.getElementById('mission-progress');
+
+        const elPreviewBox = document.getElementById('preview-box');
+        const elPreviewTitle = document.getElementById('preview-title');
+        const elPreviewDesc = document.getElementById('preview-desc');
+
+        function logTerminal(text, type) {
+            const entry = document.createElement('div');
+            entry.className = `log-line log-${type}`;
+            entry.innerText = `> ${text}`;
+            elLog.appendChild(entry);
+            elLog.scrollTop = elLog.scrollHeight;
+        }
+
+        function loadBestScore() {
+            const best = localStorage.getItem('cbreak_crush_best') || 0;
+            elBest.innerText = best;
+        }
+
+        function saveBestScore() {
+            const oldBest = localStorage.getItem('cbreak_crush_best') || 0;
+            if (score > oldBest) {
+                localStorage.setItem('cbreak_crush_best', score);
+                elBest.innerText = score;
+            }
+        }
+
+        function dismissIntro() {
+            initAudio();
+            playSound('select');
+            const overlay = document.getElementById('intro-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                isProcessing = false;
+                logTerminal("Briefing acknowledged. Directives armed.", "sys");
+            }, 500);
+        }
+
+        function loadMission() {
+            const activeMission = missions[currentStage];
+            missionProgress = 0;
+            elStage.innerText = `TIER ${activeMission.id}`;
+            elMissionText.innerText = activeMission.text;
+            elMissionProgress.innerText = `0 / ${activeMission.targetCount} ${activeMission.unit}`;
+            logTerminal(`>>> NEW DIRECTIVE ARMED: ${activeMission.text}`, "directive");
+        }
+
+        // --- SETUP STRICT DATA GRID ---
+        function initBoard() {
+            elBoard.innerHTML = '';
+            grid = []; score = 0; moves = 0; totalBytes = 0; firstSelected = null; currentStage = 0;
+            updateTelemetry();
+            loadBestScore();
+            loadMission();
+
+            // Populate safe tokens + occasional initial memory leak hazards
+            for (let r = 0; r < width; r++) {
+                let row = [];
+                for (let c = 0; c < width; c++) {
+                    let tokenObj;
+                    // 5% chance to spawn an un-matchable leak block
+                    if (Math.random() < 0.05) {
+                        tokenObj = hazardLeak;
+                    } else {
+                        tokenObj = types[Math.floor(Math.random() * types.length)];
+                    }
+                    row.push({ type: tokenObj, isBlaster: false });
+                }
+                grid.push(row);
+            }
+
+            clearInitialMatches();
+            renderBoard();
+        }
+
+        function clearInitialMatches() {
+            let hasMatch = true;
+            let attempts = 0;
+            while (hasMatch && attempts < 10) {
+                hasMatch = false;
+                for (let r = 0; r < width; r++) {
+                    for (let c = 0; c < width; c++) {
+                        // Skip checking hazards
+                        if (grid[r][c].type.name === 'leak') continue;
+
+                        if (c < width - 2 && grid[r][c+1].type.name !== 'leak' && grid[r][c+2].type.name !== 'leak' &&
+                            grid[r][c].type.name === grid[r][c+1].type.name && grid[r][c].type.name === grid[r][c+2].type.name) {
+                            grid[r][c].type = types[(types.indexOf(grid[r][c].type) + 1) % types.length];
+                            hasMatch = true;
+                        }
+                        if (r < width - 2 && grid[r+1][c].type.name !== 'leak' && grid[r+2][c].type.name !== 'leak' &&
+                            grid[r][c].type.name === grid[r+1][c].type.name && grid[r][c].type.name === grid[r+2][c].type.name) {
+                            grid[r][c].type = types[(types.indexOf(grid[r][c].type) + 2) % types.length];
+                            hasMatch = true;
+                        }
+                    }
+                }
+                attempts++;
+            }
+        }
+
+        function renderBoard() {
+            elBoard.innerHTML = '';
+            for (let r = 0; r < width; r++) {
+                for (let c = 0; c < width; c++) {
+                    const item = grid[r][c];
+                    if (!item) continue;
+
+                    const tokenEl = document.createElement('div');
+                    tokenEl.className = `token token-${item.type.name} ${item.isBlaster ? 'blaster' : ''}`;
+                    tokenEl.dataset.row = r;
+                    tokenEl.dataset.col = c;
+                    
+                    let sizeLabel = item.type.name === 'leak' ? 'LEAK' : `${item.type.bytes}B`;
+
+                    tokenEl.innerHTML = `
+                        <div class="lbl-type">${item.type.lbl}</div>
+                        <div class="lbl-size">${sizeLabel}</div>
+                    `;
+
+                    tokenEl.onclick = () => handleTokenClick(r, c);
+                    elBoard.appendChild(tokenEl);
+                }
+            }
+        }
+
+        function updateInspectorPreview(itemObj) {
+            elPreviewBox.className = `preview-box token-${itemObj.type.name} ${itemObj.isBlaster ? 'blaster' : ''}`;
+            let sizeLabel = itemObj.type.name === 'leak' ? 'LEAK' : `${itemObj.type.bytes}B`;
+            
+            elPreviewBox.innerHTML = `
+                <div class="lbl-type" style="font-size: 1rem;">${itemObj.type.lbl}</div>
+                <div class="lbl-size" style="font-size: 0.6rem;">${sizeLabel}</div>
+            `;
+            
+            let titleStr = itemObj.type.name === 'leak' ? `HAZARD: MEMORY LEAK` : `TYPE: ${itemObj.type.name.toUpperCase()} (${itemObj.type.bytes} BYTES)`;
+            elPreviewTitle.innerText = titleStr;
+            elPreviewTitle.style.color = itemObj.type.color;
+            elPreviewDesc.innerText = itemObj.isBlaster ? 
+                `🔥 MACRO BLASTER: Swapping this detonates an entire line simultaneously, processing massive byte streams!` : 
+                itemObj.type.desc;
+        }
+
+        // --- STRICT SYNCHRONIZED SWAP LOGIC ---
+        function handleTokenClick(row, col) {
+            initAudio();
+            if (isProcessing) return;
+
+            const tokenEl = document.querySelector(`.token[data-row='${row}'][data-col='${col}']`);
+            if (!tokenEl) return;
+
+            const targetItem = grid[row][col];
+            updateInspectorPreview(targetItem);
+
+            // Mismatch lock: Cannot actively select a Leak hazard for regular swapping
+            if (targetItem.type.name === 'leak') {
+                playSound('error');
+                logTerminal(`DENIED: Cannot directly move a Memory Leak. Match an adjacent PTR to execute free().`, "err");
+                return;
+            }
+
+            if (!firstSelected) {
+                playSound('select');
+                firstSelected = { row, col, el: tokenEl };
+                tokenEl.classList.add('selected');
+            } else {
+                const isAdjacent = (Math.abs(firstSelected.row - row) === 1 && firstSelected.col === col) || 
+                                   (Math.abs(firstSelected.col - col) === 1 && firstSelected.row === row);
+
+                if (firstSelected.el) firstSelected.el.classList.remove('selected');
+
+                if (isAdjacent) {
+                    isProcessing = true;
+                    moves++;
+                    updateTelemetry();
+                    swapTokens(firstSelected.row, firstSelected.col, row, col);
+                    firstSelected = null;
+                } else if (firstSelected.row === row && firstSelected.col === col) {
+                    playSound('select');
+                    firstSelected = null;
+                } else {
+                    playSound('select');
+                    firstSelected = { row, col, el: tokenEl };
+                    tokenEl.classList.add('selected');
+                }
+            }
+        }
+
+        function swapTokens(r1, c1, r2, c2) {
+            let temp = grid[r1][c1];
+            grid[r1][c1] = grid[r2][c2];
+            grid[r2][c2] = temp;
+
+            renderBoard();
+
+            setTimeout(() => {
+                const matches = checkMatches();
+                if (matches.length > 0) {
+                    processMatches(matches);
+                } else {
+                    playSound('error');
+                    let tempBack = grid[r1][c1];
+                    grid[r1][c1] = grid[r2][c2];
+                    grid[r2][c2] = tempBack;
+                    renderBoard();
+                    isProcessing = false;
+                }
+            }, 200);
+        }
+
+        // --- CASCADING MATCH ENGINE ---
+        function checkMatches() {
+            let matches = [];
+            let matchedCoords = new Set();
+
+            for (let r = 0; r < width; r++) {
+                let matchLen = 1;
+                for (let c = 0; c < width; c++) {
+                    let isLast = (c === width - 1);
+                    if (!isLast && grid[r][c] && grid[r][c+1] && 
+                        grid[r][c].type.name !== 'leak' && 
+                        grid[r][c].type.name === grid[r][c+1].type.name) {
+                        matchLen++;
+                    } else {
+                        if (matchLen >= 3) {
+                            let matchGroup = [];
+                            for (let i = c - matchLen + 1; i <= c; i++) {
+                                const coordKey = `${r},${i}`;
+                                if (!matchedCoords.has(coordKey)) {
+                                    matchedCoords.add(coordKey);
+                                    matchGroup.push({ row: r, col: i, item: grid[r][i] });
+                                }
+                            }
+                            if(matchGroup.length > 0) matches.push(matchGroup);
+                        }
+                        matchLen = 1;
+                    }
+                }
+            }
+
+            for (let c = 0; c < width; c++) {
+                let matchLen = 1;
+                for (let r = 0; r < width; r++) {
+                    let isLast = (r === width - 1);
+                    if (!isLast && grid[r][c] && grid[r+1][c] && 
+                        grid[r][c].type.name !== 'leak' && 
+                        grid[r][c].type.name === grid[r+1][c].type.name) {
+                        matchLen++;
+                    } else {
+                        if (matchLen >= 3) {
+                            let matchGroup = [];
+                            for (let i = r - matchLen + 1; i <= r; i++) {
+                                const coordKey = `${i},${c}`;
+                                if (!matchedCoords.has(coordKey)) {
+                                    matchedCoords.add(coordKey);
+                                    matchGroup.push({ row: i, col: c, item: grid[i][c] });
+                                }
+                            }
+                            if(matchGroup.length > 0) matches.push(matchGroup);
+                        }
+                        matchLen = 1;
+                    }
+                }
+            }
+
+            return matches;
+        }
+
+        function processMatches(matchGroups) {
+            let clearedLeaks = 0;
+            const activeMission = missions[currentStage];
+
+            matchGroups.forEach(group => {
+                const count = group.length;
+                const sampleItem = group[0].item.type;
+                const allocatedBytes = count * sampleItem.bytes;
+                
+                totalBytes += allocatedBytes;
+                score += (count * 20);
+
+                // --- CHECK EDUCATIONAL MISSION PROGRESS ---
+                if (sampleItem.name === activeMission.targetType) {
+                    let gained = activeMission.calc(count, allocatedBytes);
+                    missionProgress += gained;
+                    elMissionProgress.innerText = `${missionProgress} / ${activeMission.targetCount} ${activeMission.unit}`;
+                }
+
+                // --- CHECK HAZARD SANITIZATION (Matching adjacent PTR frees leaks) ---
+                if (sampleItem.name === 'ptr') {
+                    group.forEach(block => {
+                        // Scan 4-way neighbors for leak tokens
+                        const dirs = [{r: -1, c: 0}, {r: 1, c: 0}, {r: 0, c: -1}, {r: 0, c: 1}];
+                        dirs.forEach(d => {
+                            let scanR = block.row + d.r; let scanC = block.col + d.c;
+                            if (scanR >= 0 && scanR < width && scanC >= 0 && scanC < width && 
+                                grid[scanR][scanC] && grid[scanR][scanC].type.name === 'leak') {
+                                grid[scanR][scanC] = null; // free() the leak!
+                                clearedLeaks++;
+                                score += 50;
+                                logTerminal(`>>> SANITIZED: Adjacent pointer executed free() on orphaned leak block.`, "match");
+                                
+                                if (activeMission.targetType === 'leak') {
+                                    missionProgress++;
+                                    elMissionProgress.innerText = `${missionProgress} / ${activeMission.targetCount} ${activeMission.unit}`;
+                                }
+                            }
+                        });
+                    });
+                }
+
+                if (count >= 4) {
+                    playSound('blaster');
+                    logTerminal(`CRITICAL MATCH: ${count}x ${sampleItem.lbl}. MACRO BLASTER SPAWNED!`, "combo");
+                    
+                    const blasterTarget = group[0];
+                    grid[blasterTarget.row][blasterTarget.col].isBlaster = true;
+                    
+                    for (let i = 1; i < count; i++) {
+                        grid[group[i].row][group[i].col] = null;
+                    }
+                } else {
+                    playSound('crush');
+                    logTerminal(`ALLOCATED: ${count}x ${sampleItem.lbl} blocks. +${allocatedBytes} Bytes safe commit.`, "match");
+                    group.forEach(block => {
+                        if (block.item && block.item.isBlaster) {
+                            triggerBlasterClear(block.row, block.col);
+                        } else {
+                            grid[block.row][block.col] = null;
+                        }
+                    });
+                }
+            });
+
+            updateTelemetry();
+            renderBoard();
+
+            setTimeout(() => {
+                // Check if active directive mission is completed safely
+                if (missionProgress >= activeMission.targetCount) {
+                    playSound('level');
+                    logTerminal(`>>> DIRECTIVE ACCOMPLISHED: ${activeMission.text}`, "directive");
+                    score += 500;
+                    currentStage = (currentStage + 1) % missions.length;
+                    setTimeout(loadMission, 500);
+                }
+                applyGravity();
+            }, 250);
+        }
+
+        function triggerBlasterClear(row, col) {
+            playSound('blaster');
+            logTerminal(`>>> BLASTER DETONATED: Clearing Row ${row} and Column ${col}!`, "combo");
+            score += 150;
+
+            for (let i = 0; i < width; i++) {
+                if (grid[row][i]) { 
+                    totalBytes += grid[row][i].type.bytes; 
+                    // Blasters actively destroy leaks too
+                    if(grid[row][i].type.name === 'leak') score += 50;
+                    grid[row][i] = null; 
+                }
+                if (grid[i][col]) { 
+                    totalBytes += grid[i][col].type.bytes; 
+                    if(grid[i][col].type.name === 'leak') score += 50;
+                    grid[i][col] = null; 
+                }
+            }
+        }
+
+        function applyGravity() {
+            for (let c = 0; c < width; c++) {
+                for (let r = width - 1; r >= 0; r--) {
+                    if (grid[r][c] === null) {
+                        for (let scanR = r - 1; scanR >= 0; scanR--) {
+                            if (grid[scanR][c] !== null) {
+                                grid[r][c] = grid[scanR][c];
+                                grid[scanR][c] = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fill empty spaces safely, 5% chance of spawning fresh memory leak hazards
+            for (let c = 0; c < width; c++) {
+                for (let r = 0; r < width; r++) {
+                    if (grid[r][c] === null) {
+                        let tokenObj = Math.random() < 0.05 ? hazardLeak : types[Math.floor(Math.random() * types.length)];
+                        grid[r][c] = { type: tokenObj, isBlaster: false };
+                    }
+                }
+            }
+
+            renderBoard();
+
+            setTimeout(() => {
+                const newMatches = checkMatches();
+                if (newMatches.length > 0) {
+                    processMatches(newMatches);
+                } else {
+                    isProcessing = false;
+                    saveBestScore();
+                }
+            }, 300);
+        }
+
+        function hintMove() {
+            initAudio();
+            if (isProcessing) return;
+            playSound('select');
+
+            for (let r = 0; r < width; r++) {
+                for (let c = 0; c < width; c++) {
+                    // Ignore checking un-swappable leak blocks
+                    if(grid[r][c].type.name === 'leak') continue;
+
+                    if (c < width - 1 && grid[r][c+1].type.name !== 'leak') {
+                        swapSimulate(r, c, r, c + 1);
+                        if (checkMatches().length > 0) {
+                            highlightHint(r, c, r, c + 1);
+                            swapSimulate(r, c, r, c + 1);
+                            return;
+                        }
+                        swapSimulate(r, c, r, c + 1);
+                    }
+                    if (r < width - 1 && grid[r+1][c].type.name !== 'leak') {
+                        swapSimulate(r, c, r + 1, c);
+                        if (checkMatches().length > 0) {
+                            highlightHint(r, c, r + 1, c);
+                            swapSimulate(r, c, r + 1, c);
+                            return;
+                        }
+                        swapSimulate(r, c, r + 1, c);
+                    }
+                }
+            }
+            logTerminal("No immediate alignment moves detected. Consider a Buffer Reboot.", "sys");
+        }
+
+        function swapSimulate(r1, c1, r2, c2) {
+            let t = grid[r1][c1]; grid[r1][c1] = grid[r2][c2]; grid[r2][c2] = t;
+        }
+
+        function highlightHint(r1, c1, r2, c2) {
+            logTerminal("Hint scanned: Highlighting available alignment pair.", "sys");
+            const el1 = document.querySelector(`.token[data-row='${r1}'][data-col='${c1}']`);
+            const el2 = document.querySelector(`.token[data-row='${r2}'][data-col='${c2}']`);
+            if(el1) { el1.style.borderColor = "#fff"; el1.style.boxShadow = "0 0 20px #fff"; }
+            if(el2) { el2.style.borderColor = "#fff"; el2.style.boxShadow = "0 0 20px #fff"; }
+            setTimeout(() => { renderBoard(); }, 2000);
+        }
+
+        function updateTelemetry() {
+            elScore.innerText = score;
+            elMoves.innerText = moves;
+            elBytes.innerText = `${totalBytes} B`;
+            
+            if (score >= 1000) {
+                localStorage.setItem('cbreak_crush_cleared', 'true');
+            }
+        }
+
+        window.onload = initBoard;
+    </script>
+</body>
+</html>

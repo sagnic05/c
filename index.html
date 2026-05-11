@@ -11,8 +11,14 @@
             --bg-base: #050508;
             --neon-cyan: #00f3ff;
             --neon-pink: #ff00ea;
-            --neon-green: #00ff66;
+            --neon-green: #00ff66; 
+            --neon-mint: #00ffcc;  
             --neon-yellow: #ffbb00;
+            --neon-orange: #ff5500;
+            --neon-blue: #0088ff;
+            --neon-crimson: #ff0055;
+            --neon-purple: #9900ff;
+            --neon-teal: #00cccc;
             --grid-color: rgba(0, 243, 255, 0.05);
         }
 
@@ -52,10 +58,11 @@
         .boot-line { margin-bottom: 5px; border-right: 2px solid var(--neon-green); width: fit-content; white-space: nowrap; overflow: hidden; animation: typing 0.2s steps(40, end); }
         @keyframes typing { from { width: 0 } to { width: 100% } }
 
-        #main-os-content { opacity: 0; transition: opacity 1.5s ease-in; display: none; }
+        /* DOM Buffered fully invisible during boot phase to prevent layout flashes */
+        #main-os-content { transition: opacity 1.5s ease-in; }
 
         /* --- NAVIGATION --- */
-        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 243, 255, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);}
+        nav { position: fixed; top: 0; width: 100%; background: rgba(5, 5, 8, 0.4); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 243, 255, 0.2); display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; box-sizing: border-box; z-index: 100; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);}
         .nav-logo { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); font-weight: 900;}
         .nav-links a { color: #fff; text-decoration: none; margin-left: 30px; transition: color 0.3s; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; }
         .nav-links a:hover { color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
@@ -68,49 +75,35 @@
         .scroll-down { position: absolute; bottom: 50px; color: var(--neon-cyan); font-size: 2.5rem; animation: bounce 2s infinite; text-decoration: none; text-shadow: 0 0 10px var(--neon-cyan); }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-20px); } 60% { transform: translateY(-10px); } }
 
-        /* --- FIX FOR ANCHOR LINKS HIDING UNDER NAVBAR --- */
         #about, #modules { scroll-margin-top: 100px; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 100px 20px; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 100px 20px; }
         .section-title { font-family: 'Orbitron'; color: #fff; text-shadow: 0 0 10px var(--neon-cyan); font-size: 2.5rem; border-bottom: 2px solid var(--neon-pink); padding-bottom: 10px; margin-bottom: 40px; display: inline-block; }
 
         /* --- GLASS PANEL EFFECT --- */
         .glass-panel { 
-            background: rgba(20, 25, 40, 0.3);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-left: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05); 
-            border-radius: 12px; 
+            background: rgba(20, 25, 40, 0.3); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-top: 1px solid rgba(255, 255, 255, 0.3); border-left: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(255,255,255,0.05); border-radius: 12px; 
         }
         
         /* --- TERMINAL --- */
         .terminal-box { padding: 30px; margin-bottom: 50px; font-size: 1.2rem; line-height: 1.6; min-height: 250px; position: relative; border-left: 5px solid var(--neon-green) !important; }
         .terminal-header { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot.red { background: #ff5f56; box-shadow: 0 0 5px #ff5f56;} 
-        .dot.yellow { background: #ffbd2e; box-shadow: 0 0 5px #ffbd2e;} 
-        .dot.green { background: #27c93f; box-shadow: 0 0 5px #27c93f;}
+        .dot.red { background: #ff5f56; box-shadow: 0 0 5px #ff5f56;} .dot.yellow { background: #ffbd2e; box-shadow: 0 0 5px #ffbd2e;} .dot.green { background: #27c93f; box-shadow: 0 0 5px #27c93f;}
         .prompt-text { color: var(--neon-green); margin-right: 10px; text-shadow: 0 0 5px var(--neon-green); }
         .code-comment { color: #888; }
         .terminal-link { color: var(--neon-cyan); text-decoration: none; border-bottom: 1px dashed var(--neon-cyan); }
         .typewriter-inner { padding-left: 20px; border-left: 2px solid rgba(255,255,255,0.1); margin: 15px 0; }
 
-        /* --- TERMINAL SOCIAL MODULES --- */
         .terminal-socials { display: flex; gap: 15px; margin-top: 25px; padding-left: 20px; flex-wrap: wrap; opacity: 0; transition: opacity 1s ease-in; }
-        .term-btn { 
-            display: flex; align-items: center; gap: 8px; padding: 8px 16px; 
-            background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.4); 
-            color: var(--neon-cyan); font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700;
-            text-decoration: none; border-radius: 4px; transition: all 0.3s ease; text-transform: uppercase;
-        }
+        .term-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.4); color: var(--neon-cyan); font-family: 'Orbitron'; font-size: 0.85rem; font-weight: 700; text-decoration: none; border-radius: 4px; transition: all 0.3s ease; text-transform: uppercase; }
         .term-btn svg { width: 16px; height: 16px; fill: currentColor; }
         .term-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); transform: translateY(-2px); }
 
         /* --- CARDS & BADGES --- */
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
         .game-card { padding: 30px; position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
         .game-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
         .game-card:hover { transform: translateY(-10px); background: rgba(30, 35, 50, 0.4); }
@@ -120,75 +113,85 @@
         .card-title { font-family: 'Orbitron'; font-size: 1.5rem; margin: 20px 0 15px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
         .game-card:hover .card-title { animation: textGlitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; }
         
-        @keyframes textGlitch {
-            0% { transform: translate(0); text-shadow: none; }
-            20% { transform: translate(-2px, 1px); text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-cyan); }
-            40% { transform: translate(-1px, -1px); text-shadow: -2px 0 var(--neon-red), 2px 0 var(--neon-cyan); }
-            60% { transform: translate(2px, 1px); text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-cyan); }
-            80% { transform: translate(1px, -1px); text-shadow: -2px 0 var(--neon-red), 2px 0 var(--neon-cyan); }
-            100% { transform: translate(0); text-shadow: none; }
-        }
+        @keyframes textGlitch { 0% { transform: translate(0); text-shadow: none; } 20% { transform: translate(-2px, 1px); text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-cyan); } 40% { transform: translate(-1px, -1px); text-shadow: -2px 0 var(--neon-red), 2px 0 var(--neon-cyan); } 60% { transform: translate(2px, 1px); text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-cyan); } 80% { transform: translate(1px, -1px); text-shadow: -2px 0 var(--neon-red), 2px 0 var(--neon-cyan); } 100% { transform: translate(0); text-shadow: none; } }
 
-        .play-btn { display: inline-block; background: rgba(0,0,0,0.3); padding: 12px 20px; text-align: center; text-decoration: none; font-family: 'Orbitron'; border-radius: 5px; transition: all 0.3s; border: 1px solid; cursor: pointer; margin-top: auto; }
+        .play-btn { display: inline-block; background: rgba(0,0,0,0.3); padding: 12px 20px; text-align: center; text-decoration: none; font-family: 'Orbitron'; border-radius: 5px; transition: all 0.3s; border: 1px solid; cursor: pointer; margin-top: auto; font-weight: bold; }
         
-        /* Dedicated Card Accent Mappings */
-        .card-assembler .play-btn { border-color: var(--neon-cyan); color: var(--neon-cyan); }
-        .card-rpg .play-btn { border-color: var(--neon-green); color: var(--neon-green); }
-        .card-arcade .play-btn { border-color: var(--neon-pink); color: var(--neon-pink); }
+        /* Integrated Highly Distinct Module Mappings */
+        .card-sorter .play-btn { border-color: var(--neon-orange); color: var(--neon-orange); }
         .card-match .play-btn { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+        .card-heap .play-btn { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .card-crush .play-btn { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .card-maze .play-btn { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .card-assembler .play-btn { border-color: var(--neon-green); color: var(--neon-green); }
+        .card-rpg .play-btn { border-color: var(--neon-crimson); color: var(--neon-crimson); }
+        .card-arcade .play-btn { border-color: var(--neon-teal); color: var(--neon-teal); }
         
-        .card-assembler .play-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
-        .card-rpg .play-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
-        .card-arcade .play-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 20px var(--neon-pink); }
+        /* EXCLUSIVE FINAL MAINFRAME: Platinum/Cyan style signifying Progression End */
+        .card-escape .play-btn { border-color: var(--neon-cyan); color: var(--neon-cyan); background: transparent; }
+        
+        .card-sorter .play-btn:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 20px var(--neon-orange); }
         .card-match .play-btn:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 20px var(--neon-yellow); }
+        .card-heap .play-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .card-crush .play-btn:hover { background: var(--neon-pink); color: #000; box-shadow: 0 0 20px var(--neon-pink); }
+        .card-maze .play-btn:hover { background: var(--neon-purple); color: #000; box-shadow: 0 0 20px var(--neon-purple); }
+        .card-assembler .play-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
+        .card-rpg .play-btn:hover { background: var(--neon-crimson); color: #000; box-shadow: 0 0 20px var(--neon-crimson); }
+        .card-arcade .play-btn:hover { background: var(--neon-teal); color: #000; box-shadow: 0 0 20px var(--neon-teal); }
+        .card-escape .play-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
 
-        .card-assembler:hover { border-color: var(--neon-cyan); box-shadow: 0 10px 40px rgba(0, 243, 255, 0.2); }
-        .card-assembler:hover::before { background: var(--neon-cyan); }
+        .card-sorter:hover { border-color: var(--neon-orange); box-shadow: 0 10px 40px rgba(255, 85, 0, 0.2); } .card-sorter:hover::before { background: var(--neon-orange); }
+        .card-match:hover { border-color: var(--neon-yellow); box-shadow: 0 10px 40px rgba(255, 187, 0, 0.2); } .card-match:hover::before { background: var(--neon-yellow); }
+        .card-heap:hover { border-color: var(--neon-blue); box-shadow: 0 10px 40px rgba(0, 136, 255, 0.2); } .card-heap:hover::before { background: var(--neon-blue); }
+        .card-crush:hover { border-color: var(--neon-pink); box-shadow: 0 10px 40px rgba(255, 0, 234, 0.2); } .card-crush:hover::before { background: var(--neon-pink); }
+        .card-maze:hover { border-color: var(--neon-purple); box-shadow: 0 10px 40px rgba(153, 0, 255, 0.2); } .card-maze:hover::before { background: var(--neon-purple); }
+        .card-assembler:hover { border-color: var(--neon-green); box-shadow: 0 10px 40px rgba(0, 255, 102, 0.2); } .card-assembler:hover::before { background: var(--neon-green); }
+        .card-rpg:hover { border-color: var(--neon-crimson); box-shadow: 0 10px 40px rgba(255, 0, 85, 0.2); } .card-rpg:hover::before { background: var(--neon-crimson); }
+        .card-arcade:hover { border-color: var(--neon-teal); box-shadow: 0 10px 40px rgba(0, 204, 204, 0.2); } .card-arcade:hover::before { background: var(--neon-teal); }
         
-        .card-rpg:hover { border-color: var(--neon-green); box-shadow: 0 10px 40px rgba(0, 255, 102, 0.2); }
-        .card-rpg:hover::before { background: var(--neon-green); }
-        
-        .card-arcade:hover { border-color: var(--neon-pink); box-shadow: 0 10px 40px rgba(255, 0, 234, 0.2); }
-        .card-arcade:hover::before { background: var(--neon-pink); }
+        /* EXCLUSIVE FINAL MAINFRAME CARD GRADIENT */
+        .card-escape { border-color: rgba(255,255,255,0.1); }
+        .card-escape::before { background: linear-gradient(to right, var(--neon-purple), var(--neon-mint), var(--neon-cyan)) !important; transform: scaleX(1); opacity: 0.1; }
+        .card-escape:hover { border-color: var(--neon-cyan); box-shadow: 0 10px 60px rgba(0, 243, 255, 0.3); }
+        .card-escape:hover::before { opacity: 1; }
 
-        .card-match:hover { border-color: var(--neon-yellow); box-shadow: 0 10px 40px rgba(255, 187, 0, 0.2); }
-        .card-match:hover::before { background: var(--neon-yellow); }
-
-        .achievements-board { padding: 20px; margin-bottom: 50px; display: flex; gap: 20px; border-left: 5px solid var(--neon-pink) !important; flex-wrap: wrap; }
-        .badge { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 5px; color: #777; font-family: 'Orbitron'; position: relative; cursor: pointer; transition: 0.3s;}
+        /* --- ACHIEVEMENTS TELEMETRY --- */
+        .achievements-board { padding: 20px; margin-bottom: 50px; display: flex; gap: 15px; border-left: 5px solid var(--neon-pink) !important; flex-wrap: wrap; }
+        .badge { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 10px 18px; border-radius: 5px; color: #777; font-family: 'Orbitron'; font-size: 0.85rem; position: relative; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 6px; }
         .badge:hover { background: rgba(255,255,255,0.1); }
         
-        /* Unlocked Badge Custom Glow Variants */
-        .badge.unlocked { border-color: var(--neon-green); color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); box-shadow: inset 0 0 10px rgba(0,255,102,0.1);}
+        /* RESTORED INDIVIDUAL GLOW THEMES: Badges light up in their exact module-specific palettes */
+        .badge.unlocked-sorter { border-color: var(--neon-orange); color: var(--neon-orange); text-shadow: 0 0 5px var(--neon-orange); box-shadow: inset 0 0 10px rgba(255, 85, 0, 0.1); }
         .badge.unlocked-match { border-color: var(--neon-yellow); color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); box-shadow: inset 0 0 10px rgba(255,187,0,0.1); }
+        .badge.unlocked-heap { border-color: var(--neon-blue); color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); box-shadow: inset 0 0 10px rgba(0, 136, 255, 0.1); }
+        .badge.unlocked-crush { border-color: var(--neon-pink); color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); box-shadow: inset 0 0 10px rgba(255, 0, 234, 0.1); }
+        .badge.unlocked-maze { border-color: var(--neon-purple); color: var(--neon-purple); text-shadow: 0 0 5px var(--neon-purple); box-shadow: inset 0 0 10px rgba(153, 0, 255, 0.1); }
+        .badge.unlocked-escape { border-color: var(--neon-mint); color: var(--neon-mint); text-shadow: 0 0 5px var(--neon-mint); box-shadow: inset 0 0 10px rgba(0, 255, 204, 0.1); }
+        .badge.unlocked-assembler { border-color: var(--neon-green); color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); box-shadow: inset 0 0 10px rgba(0,255,102,0.1); }
+        .badge.unlocked-rpg { border-color: var(--neon-crimson); color: var(--neon-crimson); text-shadow: 0 0 5px var(--neon-crimson); box-shadow: inset 0 0 10px rgba(255,0,85,0.1); }
+        .badge.unlocked-arcade { border-color: var(--neon-teal); color: var(--neon-teal); text-shadow: 0 0 5px var(--neon-teal); box-shadow: inset 0 0 10px rgba(0,204,204,0.1); }
         .badge.unlocked-master { border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); text-shadow: 0 0 5px var(--neon-cyan); }
         
-        .badge::after {
-            content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.95); border: 1px dashed var(--neon-pink); color: var(--neon-pink); 
-            padding: 8px 12px; font-size: 0.7rem; white-space: nowrap; opacity: 0; pointer-events: none; 
-            transition: all 0.3s; z-index: 100; border-radius: 4px;
-        }
+        .badge::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.95); border: 1px dashed var(--neon-pink); color: var(--neon-pink); padding: 8px 12px; font-size: 0.7rem; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 100; border-radius: 4px; }
         .badge:hover::after { opacity: 1; bottom: 140%; }
 
-        /* --- FEEDBACK FORM STYLING --- */
+        /* --- FULLY REPAIRED SYSTEM FEEDBACK FORM STYLING --- */
         .feedback-box { padding: 30px; margin-bottom: 50px; border-left: 5px solid var(--neon-cyan) !important; }
-        .fb-input-group { margin-bottom: 20px; }
-        .fb-label { display: block; font-family: 'Orbitron'; font-size: 0.85rem; color: var(--neon-cyan); margin-bottom: 8px; letter-spacing: 1px; }
+        .fb-input-group { margin-bottom: 20px; width: 100%; }
+        .fb-label { display: block; font-family: 'Orbitron'; font-size: 0.85rem; color: var(--neon-cyan); margin-bottom: 8px; letter-spacing: 1px; font-weight: bold; }
         .fb-input, .fb-textarea { 
-            width: 100%; padding: 12px; background: rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
-            color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1rem; 
-            box-sizing: border-box; outline: none; transition: border-color 0.3s;
+            width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 6px; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 1rem; 
+            box-sizing: border-box; outline: none; transition: border-color 0.3s; 
         }
         .fb-input:focus, .fb-textarea:focus { border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,243,255,0.1); }
-        .fb-radio-group { display: flex; gap: 20px; flex-wrap: wrap; }
+        .fb-radio-group { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 5px; }
         .fb-radio-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #ccc; font-size: 1rem; }
-        .fb-radio-label input[type="radio"] { accent-color: var(--neon-cyan); cursor: pointer; }
+        .fb-radio-label input[type="radio"] { accent-color: var(--neon-cyan); cursor: pointer; width: 16px; height: 16px; }
         .fb-submit-btn { 
-            background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-cyan); 
-            color: var(--neon-cyan); font-family: 'Orbitron'; font-size: 1rem; font-weight: 700;
-            padding: 12px 25px; border-radius: 6px; cursor: pointer; transition: all 0.3s; width: 100%;
+            background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); 
+            font-family: 'Orbitron'; font-size: 1rem; font-weight: 700; padding: 12px 25px; border-radius: 6px; 
+            cursor: pointer; transition: all 0.3s; width: 100%; margin-top: 10px; text-transform: uppercase;
         }
         .fb-submit-btn:hover:not(:disabled) { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
         .fb-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; border-color: #555; color: #555; }
@@ -196,49 +199,23 @@
         .blink { animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- CLEAN FOOTER --- */
-        footer { 
-            text-align: center; 
-            padding: 50px 20px 30px 20px; 
-            background: #050508; 
-            border-top: 1px solid rgba(0, 243, 255, 0.2); 
-            color: #888; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 25px; 
-            position: relative; 
-            z-index: 10;
-        }
-
+        footer { text-align: center; padding: 50px 20px 30px 20px; background: #050508; border-top: 1px solid rgba(0, 243, 255, 0.2); color: #888; display: flex; flex-direction: column; align-items: center; gap: 25px; position: relative; z-index: 10; }
+        
+        /* RESTORED GREEN SOCIAL FOOTER GLOW */
         .footer-socials { display: flex; gap: 20px; }
-        .footer-socials a { 
-            display: flex; justify-content: center; align-items: center; 
-            width: 45px; height: 45px; 
-            border: 2px solid var(--neon-cyan); border-radius: 50%; 
-            color: var(--neon-cyan); transition: all 0.3s ease; 
-        }
+        .footer-socials a { display: flex; justify-content: center; align-items: center; width: 45px; height: 45px; border: 2px solid var(--neon-green); border-radius: 50%; color: var(--neon-green); transition: all 0.3s ease; box-shadow: 0 0 5px rgba(0, 255, 102, 0.1); }
         .footer-socials a svg { width: 20px; height: 20px; fill: currentColor; }
-        .footer-socials a:hover { 
-            background: var(--neon-cyan); color: #000; 
-            box-shadow: 0 0 15px var(--neon-cyan); transform: translateY(-5px); 
-        }
-
+        .footer-socials a:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); transform: translateY(-5px); }
+        
         .footer-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
-        .footer-links a { 
-            color: #ccc; text-decoration: none; 
-            font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; 
-            transition: color 0.3s ease; cursor: pointer;
-        }
+        .footer-links a { color: #ccc; text-decoration: none; font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; transition: color 0.3s ease; cursor: pointer; }
         .footer-links a:hover { color: var(--neon-pink); text-shadow: 0 0 8px var(--neon-pink); }
-
         .footer-copyright { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: #666; margin-top: 10px; }
-
     </style>
 </head>
 <body onclick="initAudio()">
 
-    <div class="ambient-bg" id="ambient-bg">
+    <div class="ambient-bg" id="ambient-bg" style="display: none; opacity: 0;">
         <div class="orb orb-cyan"></div>
         <div class="orb orb-pink"></div>
         <div class="orb orb-green"></div>
@@ -251,7 +228,7 @@
         <div id="boot-terminal"></div>
     </div>
 
-    <div id="main-os-content">
+    <div id="main-os-content" style="display: none; opacity: 0;">
         <nav>
             <div class="nav-logo">C-BREAK OS</div>
             <div class="nav-links">
@@ -276,8 +253,7 @@
                         <div class="dot yellow"></div>
                         <div class="dot green"></div>
                     </div>
-                    <div><span class="prompt-text">admin@server:~$</span> <span class="code-comment">// Querying developer profile...</span></div>
-                    <div><span class="prompt-text">admin@server:~$</span> ./load_profile.sh</div>
+                    <div><span class="prompt-text">admin@server:~$</span> load_profile.sh</div>
                     <br>
                     <div id="typewriter-text" class="typewriter-inner"></div>
                     <br>
@@ -285,7 +261,7 @@
                     
                     <div id="terminal-socials" class="terminal-socials">
                         <a href="https://github.com/sagnic05" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
-                            <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            <svg viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-56.4 104.2-112.9 110.5 9.2 7.8 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
                             GitHub
                         </a>
                         <a href="https://www.linkedin.com/in/sagnic-bhattacharyya-a40ab42a0/" target="_blank" class="term-btn" onmouseenter="playHoverSound()">
@@ -306,11 +282,16 @@
                 <h3 style="color: #fff; text-shadow: 0 0 8px var(--neon-pink); font-family: 'Orbitron';">USER TELEMETRY</h3>
                 
                 <div class="glass-panel achievements-board">
-                    <div class="badge" id="badge-assembler" onclick="handleBadgeClick(this)">🔒 Assembler Cleared</div>
-                    <div class="badge" id="badge-rpg" onclick="handleBadgeClick(this)">🔒 RPG Cleared</div>
-                    <div class="badge" id="badge-arcade" onclick="handleBadgeClick(this)">🔒 Arcade Score: 0</div>
-                    <div class="badge" id="badge-match" onclick="handleBadgeClick(this)">🔒 Match Score: 0</div>
-                    <div class="badge" id="badge-master" onclick="handleBadgeClick(this)">🔒 Kernel Master</div>
+                    <div class="badge" id="badge-sorter" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Sorter Record: --</span></div>
+                    <div class="badge" id="badge-match" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Match Score: 0</span></div>
+                    <div class="badge" id="badge-heap" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Heap Record: --</span></div>
+                    <div class="badge" id="badge-crush" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Crush Score: 0</span></div>
+                    <div class="badge" id="badge-maze" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Maze Traversal</span></div>
+                    <div class="badge" id="badge-assembler" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Assembler Cleared</span></div>
+                    <div class="badge" id="badge-rpg" onclick="handleBadgeClick(this)"><span>🔒</span> <span>RPG Cleared</span></div>
+                    <div class="badge" id="badge-arcade" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Arcade Score: 0</span></div>
+                    <div class="badge" id="badge-escape" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Mainframe: Tier 0</span></div>
+                    <div class="badge" id="badge-master" onclick="handleBadgeClick(this)"><span>🔒</span> <span>Kernel Master</span></div>
                 </div>
             </div>
 
@@ -318,32 +299,67 @@
                 <h2 class="section-title">ACTIVE MODULES</h2>
                 <div class="games-grid">
                     
+                    <div class="glass-panel game-card card-sorter" onmouseenter="playHoverSound()">
+                        <div class="card-tag">PURE LEARNING</div>
+                        <h3 class="card-title">Memory Bin Sorter</h3>
+                        <p class="card-desc">A guided visual organizer. Master basic C types by routing scrambled payloads to their native registers. Track your fastest completion times!</p>
+                        <a href="sorter.html" class="play-btn">INITIATE ASSIGNMENT</a>
+                    </div>
+
+                    <div class="glass-panel game-card card-match" onmouseenter="playHoverSound()">
+                        <div class="card-tag">CRYPTOGRAPHIC DECK</div>
+                        <h3 class="card-title">Syntax Match V4.0</h3>
+                        <p class="card-desc">Decrypt abstract memory buffers by pairing C commands, operators, and macros across 5 dynamic security layers.</p>
+                        <a href="match.html" class="play-btn">INITIATE DECRYPTION</a>
+                    </div>
+
+                    <div class="glass-panel game-card card-heap" onmouseenter="playHoverSound()">
+                        <div class="card-tag">POINTER SANITIZATION</div>
+                        <h3 class="card-title">Heap Away (Arrows)</h3>
+                        <p class="card-desc">Clear the dynamic heap stack. Tap unblocked pointer arrows to execute verified <code style="color: var(--neon-green);">free()</code> commands and permanently prevent memory leaks.</p>
+                        <a href="heap.html" class="play-btn">FREE() THE HEAP</a>
+                    </div>
+
+                    <div class="glass-panel game-card card-crush" onmouseenter="playHoverSound()">
+                        <div class="card-tag">ALLOCATION QUOTAS</div>
+                        <h3 class="card-title">Syntax Crush V4.0</h3>
+                        <p class="card-desc">A guided match-3 compiler. Fulfill specific byte quotas for targeted C types, execute macro preprocessor blasters, and sanitize hazardous memory leaks via adjacent pointers.</p>
+                        <a href="crush.html" class="play-btn">INITIATE CRUSH</a>
+                    </div>
+
+                    <div class="glass-panel game-card card-maze" onmouseenter="playHoverSound()">
+                        <div class="card-tag">HARDCORE TRAVERSAL</div>
+                        <h3 class="card-title">Maze Escape: Pointers</h3>
+                        <p class="card-desc">Navigate an unstable RAM grid entirely by typing raw C pointer arithmetic. Deploy casting, dereferencing teleports, and direct sanitization under active clock constraints!</p>
+                        <a href="maze.html" class="play-btn">TRACE POINTERS</a>
+                    </div>
+
                     <div class="glass-panel game-card card-assembler" onmouseenter="playHoverSound()">
                         <div class="card-tag">LEVEL 1-10</div>
                         <h3 class="card-title">Syntax Assembler</h3>
-                        <p class="card-desc">Repair fragmented C scripts by dragging blocks. Build muscle memory without typing.</p>
+                        <p class="card-desc">Repair fragmented C scripts by dragging blocks. Build structural muscle memory without typing a single line.</p>
                         <a href="assembler.html" class="play-btn">INITIATE TRAINING</a>
                     </div>
 
                     <div class="glass-panel game-card card-rpg" onmouseenter="playHoverSound()">
                         <div class="card-tag">TACTICAL COMBAT</div>
                         <h3 class="card-title">Kernel Panic: C-RPG</h3>
-                        <p class="card-desc">Turn-based logic combat. Face off against Syntax Bugs and the Data Titan boss.</p>
+                        <p class="card-desc">Turn-based logic combat. Complete conditional logic segments under pressure to execute devastating strikes against Syntax Bugs and the Data Titan boss.</p>
                         <a href="rpg.html" class="play-btn">ENTER ARENA</a>
                     </div>
 
                     <div class="glass-panel game-card card-arcade" onmouseenter="playHoverSound()">
                         <div class="card-tag">SURVIVAL MODE</div>
                         <h3 class="card-title">Bitwise Assault V3</h3>
-                        <p class="card-desc">Defend the core in 3D survival mode. Evaluate logic in real-time.</p>
+                        <p class="card-desc">Defend the core in a high-speed 3D synthwave arena. Evaluate complex bitwise operations in your head and type the exact output to fire your laser.</p>
                         <a href="arcade.html" class="play-btn">DEFEND THE CORE</a>
                     </div>
 
-                    <div class="glass-panel game-card card-match" onmouseenter="playHoverSound()">
-                        <div class="card-tag">CRYPTOGRAPHIC DECK</div>
-                        <h3 class="card-title">Syntax Match V3.1</h3>
-                        <p class="card-desc">Decrypt abstract memory buffers by pairing C commands, operators, and macros across 5 dynamic security layers.</p>
-                        <a href="match.html" class="play-btn">INITIATE DECRYPTION</a>
+                    <div class="glass-panel game-card card-escape" onmouseenter="playHoverSound()">
+                        <div class="card-tag">ULTIMATE CHALLENGE</div>
+                        <h3 class="card-title">Terminal Escape: IDE</h3>
+                        <p class="card-desc">The absolute ultimate C programming game. Write complete, compile-ready programs from scratch to break through 50 randomized automated security tiers!</p>
+                        <a href="escape.html" class="play-btn">INITIATE EXFILTRATION</a>
                     </div>
 
                 </div>
@@ -384,7 +400,7 @@
         <footer>
             <div class="footer-socials">
                 <a href="https://github.com/sagnic05" target="_blank" title="GitHub" onmouseenter="playHoverSound()">
-                    <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <svg viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-56.4 104.2-112.9 110.5 9.2 7.8 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
                 </a>
                 <a href="https://www.linkedin.com/in/sagnic-bhattacharyya-a40ab42a0/" target="_blank" title="LinkedIn" onmouseenter="playHoverSound()">
                     <svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
@@ -425,7 +441,7 @@
 
         function playHoverSound() { playSound('hover'); }
 
-        const bootLines = ["Initializing Kernel...", "Checking memory... [OK]", "Establishing secure uplink...", "Loading Glass UI Overrides...", "Ready."];
+        const bootLines = ["Initializing Kernel...", "Checking memory... [OK]", "Establishing secure uplink...", "Loading Glass UI Overrides...", "Syncing procedural datasets...", "Unsealing cryptographic headers...", "Ready."];
 
         async function startBootSequence() {
             const term = document.getElementById('boot-terminal');
@@ -434,25 +450,26 @@
                 line.className = 'boot-line';
                 line.innerText = `> ${lineText}`;
                 term.appendChild(line);
-                await new Promise(r => setTimeout(r, 300));
+                await new Promise(r => setTimeout(r, 250));
             }
             document.getElementById('boot-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('boot-screen').style.display = 'none';
                 const main = document.getElementById('main-os-content');
                 const ambient = document.getElementById('ambient-bg');
-                main.style.display = 'block';
                 
-                // Sync the fade in of the ambient orbs with the main content
-                setTimeout(() => { 
-                    main.style.opacity = '1'; 
-                    ambient.style.opacity = '1';
-                    typeWriter(); 
-                }, 100);
+                main.style.display = 'block';
+                ambient.style.display = 'block';
+                void main.offsetWidth; 
+                
+                main.style.opacity = '1';
+                ambient.style.opacity = '1';
+                
+                setTimeout(typeWriter, 100);
             }, 800);
         }
 
-        const textToType = `User_ID: Sagnic Bhattacharyya\nClearance: B.Tech Computer Science Engineer\nUplink: <a href="https://mail.google.com/mail/?view=cm&fs=1&to=bhattacharyya.sagnic@gmail.com" target="_blank" class="terminal-link">bhattacharyya.sagnic@gmail.com</a>\nDirective: Redefine technical education through interactive software design.\n\nSystem Context: C-BREAK OS is a simulated training environment engineered to eliminate passive learning. Abstract C programming syntax is weaponized into tangible survival mechanics. Operators must deploy logic, manipulate memory pointers, and compile code under pressure to sanitize system bugs and defend the core architecture.`;
+        const textToType = `Querying User_ID... [Sagnic Bhattacharyya]\nClearance: Computer Science Engineer (B.Tech)\nDirective: Redefine technical education through interactive software.\n\nContext: C-BREAK OS is an advanced training mainframe engineered to eliminate passive learning. We decouple syntax muscle memory from abstract parameters, forcing operators to deploy verified C pointer arithmetic, manipulate raw memory buffers, and compile complete source code under rigorous runtime constraints to break through security layers.`;
         
         let charIdx = 0;
         let isTag = false;
@@ -482,145 +499,86 @@
             else playSound('error');
         }
 
-        // --- WEB3FORMS TELEMETRY UPLINK ---
-        async function submitTelemetryUplink() {
-            initAudio();
-            const name = document.getElementById('fb-name').value.trim() || 'Anonymous';
-            const msgEl = document.getElementById('fb-msg');
-            const msg = msgEl ? msgEl.value.trim() : '';
-            
-            const ratingEl = document.querySelector('input[name="fb-rate"]:checked');
-            const rating = ratingEl ? ratingEl.value : 'Stable';
-            
-            const statusEl = document.getElementById('fb-status');
-            const submitBtn = document.getElementById('fb-submit');
-
-            if (!msg) {
-                playSound('error');
-                if(statusEl) {
-                    statusEl.style.color = "var(--neon-red, #ff3333)";
-                    statusEl.innerText = ">> ERROR: EMPTY TELEMETRY PACKET DETECTED.";
-                    setTimeout(() => statusEl.innerText = "", 3000);
-                }
-                return;
-            }
-
-            playSound('hover');
-            if(submitBtn) submitBtn.disabled = true;
-            if(statusEl) {
-                statusEl.style.color = "#888";
-                statusEl.innerText = ">> ROUTING PACKET VIA SECURE API...";
-            }
-
-            const emergencyUnlock = setTimeout(() => {
-                if(submitBtn) submitBtn.disabled = false;
-                if(statusEl) {
-                    playSound('error');
-                    statusEl.style.color = "var(--neon-red, #ff3333)";
-                    statusEl.innerText = ">> UPLINK TIMEOUT: SERVER DID NOT RESPOND.";
-                    setTimeout(() => statusEl.innerText = "", 4000);
-                }
-            }, 8000);
-
-            const payload = {
-                access_key: "10899ee6-bba8-4318-9f33-561a10cc6060",
-                subject: `C-BREAK OS Log: ${rating} feedback from ${name}`,
-                from_name: "C-BREAK OS Terminal",
-                Operator_Handle: name,
-                System_Stability: rating,
-                Log_Payload: msg
-            };
-
-            try {
-                const response = await fetch("https://api.web3forms.com/submit", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-
-                clearTimeout(emergencyUnlock); 
-
-                const result = await response.json();
-
-                if (response.status === 200) {
-                    playSound('success');
-                    if(statusEl) {
-                        statusEl.style.color = "var(--neon-cyan, #00f3ff)";
-                        statusEl.innerText = `>> PACKET COMMITTED. THANK YOU, ${name.toUpperCase()}.`;
-                    }
-                    document.getElementById('fb-name').value = '';
-                    document.getElementById('fb-msg').value = '';
-                } else {
-                    playSound('error');
-                    if(statusEl) {
-                        statusEl.style.color = "var(--neon-red, #ff3333)";
-                        statusEl.innerText = `>> ROUTING ERROR: ${result.message || "REJECTED"}`;
-                    }
-                }
-            } catch (err) {
-                clearTimeout(emergencyUnlock);
-                playSound('error');
-                if(statusEl) {
-                    statusEl.style.color = "var(--neon-red, #ff3333)";
-                    statusEl.innerText = ">> UPLINK BROKEN: CHECK INTERNET CONNECTION.";
-                }
-            } finally {
-                if(submitBtn) submitBtn.disabled = false;
-                setTimeout(() => { if(statusEl) statusEl.innerText = ""; }, 5000);
-            }
-        }
-
-        // --- BOOT LOADER & TELEMETRY SYNC ---
+        // --- MASTER BOOT LOADER & NATIVE THEMED TELEMETRY AGGREGATOR ---
         window.onload = () => {
-            const bAsm = document.getElementById('badge-assembler');
-            const bRpg = document.getElementById('badge-rpg');
-            const bArc = document.getElementById('badge-arcade');
-            const bMtc = document.getElementById('badge-match');
-            const bMst = document.getElementById('badge-master');
-            
-            const arcScore = localStorage.getItem('cbreak_arcade_score') || 0;
-            const mtcScore = localStorage.getItem('cbreak_match_score') || 0;
-
-            bAsm.setAttribute('data-tooltip', 'LOCKED: Clear all 10 Assembler levels.');
-            bRpg.setAttribute('data-tooltip', 'LOCKED: Defeat Data Titan in RPG.');
-            bArc.setAttribute('data-tooltip', 'NO DATA: Survive Bitwise Assault.');
-            bMtc.setAttribute('data-tooltip', 'LOCKED: Decrypt all 5 match tiers.');
-            bMst.setAttribute('data-tooltip', 'LOCKED: Rack up massive campaign points.');
-
-            if(localStorage.getItem('cbreak_assembler_cleared') === 'true') {
-                bAsm.innerHTML = "✅ Assembler Cleared"; bAsm.classList.add('unlocked');
-                bAsm.setAttribute('data-tooltip', 'VERIFIED: Syntax Mastered.');
-            }
-            if(localStorage.getItem('cbreak_rpg_level') === 'MAX') {
-                bRpg.innerHTML = "✅ RPG Cleared"; bRpg.classList.add('unlocked');
-                bRpg.setAttribute('data-tooltip', 'VERIFIED: Titan Defeated.');
-            }
-            if(arcScore > 0) {
-                bArc.innerHTML = `🏆 Arcade Score: ${arcScore}`; bArc.classList.add('unlocked');
-                bArc.setAttribute('data-tooltip', 'LOGGED: Performance Archive.');
-            }
-            if(mtcScore > 0) {
-                bMtc.innerHTML = `🔑 Match Score: ${mtcScore}`; bMtc.classList.add('unlocked-match', 'unlocked');
-                bMtc.setAttribute('data-tooltip', 'VERIFIED: Cryptographic Master.');
-            }
-            if(arcScore >= 200 || mtcScore >= 3000) {
-                bMst.innerHTML = `🌟 KERNEL MASTER`; bMst.classList.add('unlocked-master', 'unlocked');
-                bMst.setAttribute('data-tooltip', 'LEGENDARY: System God.');
-            }
-
             if(sessionStorage.getItem('cbreak_booted') === 'true') {
                 document.getElementById('boot-screen').style.display = 'none';
                 const main = document.getElementById('main-os-content');
                 const ambient = document.getElementById('ambient-bg');
-                main.style.display = 'block';
-                main.style.opacity = '1';
-                ambient.style.opacity = '1';
+                main.style.display = 'block'; main.style.opacity = '1'; ambient.style.opacity = '1'; ambient.style.display = 'block';
                 document.getElementById('typewriter-text').innerHTML = textToType.replace(/\n/g, '<br>');
                 document.getElementById('final-prompt').style.display = 'block';
                 document.getElementById('terminal-socials').style.opacity = '1'; 
             } else {
                 sessionStorage.setItem('cbreak_booted', 'true');
                 startBootSequence();
+            }
+
+            const bSrt = document.getElementById('badge-sorter');
+            const bMtc = document.getElementById('badge-match');
+            const bHep = document.getElementById('badge-heap');
+            const bCrs = document.getElementById('badge-crush');
+            const bMze = document.getElementById('badge-maze');
+            const bAsm = document.getElementById('badge-assembler');
+            const bRpg = document.getElementById('badge-rpg');
+            const bArc = document.getElementById('badge-arcade');
+            const bEsc = document.getElementById('badge-escape');
+            const bMst = document.getElementById('badge-master');
+            
+            bSrt.setAttribute('data-tooltip', 'LOCKED: Sorter Record unlogged.');
+            bMtc.setAttribute('data-tooltip', 'LOCKED: Decrypt Match Tiers 1-5.');
+            bHep.setAttribute('data-tooltip', 'LOCKED: Heap Record unlogged.');
+            bCrs.setAttribute('data-tooltip', 'LOCKED: Clear all Crush allocation quotas.');
+            bMze.setAttribute('data-tooltip', 'LOCKED: Escape the hard-tier memory matrix.');
+            bAsm.setAttribute('data-tooltip', 'LOCKED: Repair Assembler levels 1-10.');
+            bRpg.setAttribute('data-tooltip', 'LOCKED: Defeat Data Titan in RPG.');
+            bArc.setAttribute('data-tooltip', 'LOCKED: Survive Bitwise Assault.');
+            bEsc.setAttribute('data-tooltip', 'LOCKED: Compile raw source programs inside Mainframe.');
+            bMst.setAttribute('data-tooltip', 'LOCKED: Rigorous multi-module mastery unverified.');
+
+            const srtBest = localStorage.getItem('cbreak_sorter_best');
+            const mtcScore = parseInt(localStorage.getItem('cbreak_match_score')) || 0;
+            const hepBest = localStorage.getItem('cbreak_heap_best');
+            const crsBest = parseInt(localStorage.getItem('cbreak_crush_best')) || 0;
+            const mzeCleared = localStorage.getItem('cbreak_maze_cleared');
+            const escBestTier = localStorage.getItem('cbreak_escape_best_tier');
+            const escLines = localStorage.getItem('cbreak_escape_total_lines');
+            const arcScore = parseInt(localStorage.getItem('cbreak_arcade_score')) || 0;
+
+            // RESTORED NATIVE THEMED OVERRIDES: Badges inherit their dedicated CSS styles individually
+            if(srtBest) { bSrt.innerHTML = `<span>⚡</span> <span>Sorter Record: ${parseFloat(srtBest).toFixed(1)}s</span>`; bSrt.classList.add('unlocked-sorter', 'unlocked'); bSrt.setAttribute('data-tooltip', 'VERIFIED: Rapid Type Recognition.'); }
+            if(mtcScore > 0) { bMtc.innerHTML = `<span>🧩</span> <span>Match Score: ${mtcScore}</span>`; bMtc.classList.add('unlocked-match', 'unlocked'); bMtc.setAttribute('data-tooltip', 'VERIFIED: Cryptographic Decryptor.'); }
+            if(hepBest) { bHep.innerHTML = `<span>🧹</span> <span>Heap Record: ${parseFloat(hepBest).toFixed(1)}s</span>`; bHep.classList.add('unlocked-heap', 'unlocked'); bHep.setAttribute('data-tooltip', 'VERIFIED: Memory Leaks Sanitized.'); }
+            if(crsBest > 0) { bCrs.innerHTML = `<span>💥</span> <span>Crush Score: ${crsBest}</span>`; bCrs.classList.add('unlocked-crush', 'unlocked'); bCrs.setAttribute('data-tooltip', 'VERIFIED: Allocation Quotas Met.'); }
+            if(mzeCleared === 'true') { bMze.innerHTML = `<span>🗺️</span> <span>Maze Traversed</span>`; bMze.classList.add('unlocked-maze', 'unlocked'); bMze.setAttribute('data-tooltip', 'VERIFIED: Hardcore Pointer Traversal.'); }
+            if(localStorage.getItem('cbreak_assembler_cleared') === 'true') { bAsm.innerHTML = `<span>⚙️</span> <span>Assembler Cleared</span>`; bAsm.classList.add('unlocked-assembler', 'unlocked'); bAsm.setAttribute('data-tooltip', 'VERIFIED: Muscle Memory Mastered.'); }
+            if(localStorage.getItem('cbreak_rpg_level') === 'MAX') { bRpg.innerHTML = `<span>⚔️</span> <span>RPG Cleared</span>`; bRpg.classList.add('unlocked-rpg', 'unlocked'); bRpg.setAttribute('data-tooltip', 'VERIFIED: Data Titan Defeated.'); }
+            if(arcScore > 0) { bArc.innerHTML = `<span>🕹️</span> <span>Arcade Score: ${arcScore}</span>`; bArc.classList.add('unlocked-arcade', 'unlocked'); bArc.setAttribute('data-tooltip', 'LOGGED: Survival mode archive.'); }
+            
+            // POPULATED EXCLUSIVE FINAL MAINFRAME BADGE IN MINT
+            if(escBestTier) { 
+                bEsc.innerHTML = `<span>💻</span> <span>Mainframe: Tier ${escBestTier}</span>`; 
+                bEsc.classList.add('unlocked-escape', 'unlocked'); 
+                bEsc.setAttribute('data-tooltip', `VERIFIED: Compiled exactly ${escLines || 0} full source lines.`); 
+            }
+            
+            // RIGOROUS FAIL-SAFE AGGREGATE LOGIC
+            let milestonesMet = 0;
+            if(arcScore >= 500) milestonesMet++;
+            if(mtcScore >= 3000) milestonesMet++;
+            if(crsBest >= 3000) milestonesMet++;
+            if(hepBest && parseFloat(hepBest) <= 15.0) milestonesMet++;
+            if(srtBest && parseFloat(srtBest) <= 15.0) milestonesMet++;
+            if(mzeCleared === 'true') milestonesMet++;
+            if(escBestTier && parseInt(escBestTier) >= 10) milestonesMet++;
+            if(localStorage.getItem('cbreak_assembler_cleared') === 'true') milestonesMet++;
+            if(localStorage.getItem('cbreak_rpg_level') === 'MAX') milestonesMet++;
+
+            if(milestonesMet >= 3) {
+                bMst.innerHTML = `<span>🌟</span> <span>KERNEL MASTER</span>`; bMst.classList.add('unlocked-master', 'unlocked');
+                bMst.setAttribute('data-tooltip', 'LEGENDARY: Evolved System God.');
+            } else {
+                bMst.innerHTML = `<span>🔒</span> <span>Kernel Master</span>`; bMst.classList.remove('unlocked-master', 'unlocked');
             }
         };
     </script>
