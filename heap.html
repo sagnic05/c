@@ -126,6 +126,28 @@
         .log-err { color: var(--neon-pink); }
 
         @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; margin-top: 80px; padding: 15px; gap: 20px; }
+            .telemetry-box { position: relative; z-index: 10; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
+            .telemetry-box hr { display: none; }
+            .telemetry-box > div, .telemetry-box > button { flex: 1 1 auto; min-width: 120px; text-align: center; margin: 0; }
+            nav { padding: 15px 20px; }
+            .nav-logo { font-size: 1.2rem; }
+            .return-btn { font-size: 0.8rem; padding: 5px 10px; }
+        }
+        
+        @media (max-width: 600px) {
+            .intro-box { margin: 20px; padding: 20px; }
+            .telemetry-box { flex-direction: column; align-items: stretch; }
+            .grid { transform: scale(0.8); transform-origin: top center; margin: 0 auto; }
+            .board-container { min-height: 400px; padding: 15px; display: flex; align-items: flex-start; justify-content: center; }
+        }
+
+        @media (max-width: 400px) {
+            .grid { transform: scale(0.65); }
+            .board-container { min-height: 320px; }
+        }
     </style>
 </head>
 <body onclick="initAudio()">

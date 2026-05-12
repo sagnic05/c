@@ -87,6 +87,24 @@
         .overlay-box h2 { font-family: 'Press Start 2P', cursive; font-size: 1.2em; color: var(--neon-green); text-align: center; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px;}
         .overlay-box p { color: #ccc; line-height: 1.6; font-size: 1em; font-family: 'Fira Code', monospace; text-align: left;}
         .overlay-box strong { color: #fff; }
+
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            .top-nav { width: 100%; max-width: 850px; padding: 0 15px; box-sizing: border-box; }
+            .game-console { width: calc(100% - 30px); max-width: 850px; height: auto; min-height: 650px; }
+            .arena { padding: 40px 20px; }
+        }
+        
+        @media (max-width: 600px) {
+            .arena { flex-direction: column; gap: 40px; padding: 30px 15px; }
+            .ui-panel { flex-direction: column; }
+            .menu { border-right: none; border-bottom: 2px solid #333; flex-direction: column; gap: 10px; }
+            .menu button { text-align: center; }
+            .game-console { min-height: auto; }
+            .action-screen { padding: 15px; }
+            .code-box { display: flex; flex-direction: column; align-items: center; text-align: center; }
+            .code-box input { width: 100%; max-width: 150px; margin: 10px 0; }
+        }
     </style>
 </head>
 <body>

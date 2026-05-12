@@ -113,6 +113,25 @@
         .log-success { color: var(--neon-green); font-weight: bold; }
         .log-err { color: var(--neon-crimson); font-weight: bold; }
 
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; margin-top: 80px; padding: 15px; gap: 20px; }
+            .telemetry-box { position: relative; z-index: 10; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
+            .telemetry-box hr { display: none; }
+            .telemetry-box > div, .telemetry-box > button { flex: 1 1 auto; min-width: 120px; text-align: center; margin: 0; }
+            nav { padding: 15px 20px; }
+            .nav-logo { font-size: 1.2rem; }
+            .return-btn { font-size: 0.8rem; padding: 5px 10px; }
+        }
+        
+        @media (max-width: 600px) {
+            .intro-box { margin: 20px; padding: 20px; }
+            .telemetry-box { flex-direction: column; align-items: stretch; }
+            .ide-header { flex-direction: column; gap: 10px; text-align: center; }
+            .action-btn { width: 100%; margin: 5px 0; }
+            .workspace > div:last-child { flex-direction: column; gap: 10px !important; }
+        }
+
         @keyframes flashVictory { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
